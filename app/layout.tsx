@@ -21,16 +21,28 @@ export const metadata: Metadata = {
     shortcut: "/logo-sm.png",
     apple: "/logo-sm.png",
   },
+  metadataBase: new URL('https://sankofa-one.vercel.app/'), // Replace with your actual domain
   openGraph: {
     title: "PanEvent",
     description: "Create, Manage & Grow Events with Real-Time Power",
-    images: ["/logo.png"],
+    url: '/',
+    siteName: 'PanEvent',
+    images: [
+      {
+        url: '/og-1.webp', // Create a proper OG image (1200x630px)
+        width: 1200,
+        height: 630,
+        alt: 'PanEvent - Event Management Platform',
+      }
+    ],
+    locale: 'en_US',
+    type: 'website',
   },
   twitter: {
-    card: "summary",
+    card: "summary_large_image", // Changed from "summary" for better preview
     title: "PanEvent",
     description: "Create, Manage & Grow Events with Real-Time Power",
-    images: ["/logo-sm.png"],
+    images: ["/og-1.webp"], // Use same OG image
   },
 };
 

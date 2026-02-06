@@ -48,7 +48,7 @@ export function HeroSection() {
                     <div className="md:mx-auto flex flex-col items-center gap-4 mt-12 text-center">
                         <ScrambleText
                             text="*133*3#"
-                            className="text-6xl  font-bold mx-auto block"
+                            className="text-4xl sm:text-5xl md:text-6xl font-bold mx-auto block"
                             colors={["#ef4444", "#facc15", "#16a34a"]}
                             scrambleSpeed={150}
                             duration={1200}

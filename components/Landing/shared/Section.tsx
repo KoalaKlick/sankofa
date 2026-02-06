@@ -30,7 +30,7 @@ export const Section: React.FC<SectionProps> = ({
     ...props
 }) => {
     return (
-        <Component {...props} id={id} className={`w-full bg-white ${className}`}>
+        <Component {...props} id={id} className={`w-full  ${className}`}>
             <div
                 className={`mx-auto px-4 sm:px-6 lg:px-6 ${maxWidthClasses[maxWidth]} ${contentClassName}`}
             >

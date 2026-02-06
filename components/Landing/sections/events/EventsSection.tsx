@@ -31,7 +31,7 @@ export function EventsSection({
     const x = useTransform(scrollYProgress, [0, 1], ["0%", "-100%"])
 
     return (
-        <Section id="events" className="h-auto overflow-visible bg-[#7d1c1c]">
+        <Section id="events" className="h-auto overflow-visible bg-primary-950 relative">
             {/* <EventsIntro title={title} /> */}
             <EventGallery items={items} x={x} scrollProgress={scrollYProgress} containerRef={containerRef} />
             {/* <EventsOutro text={outroText} /> */}

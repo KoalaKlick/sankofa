@@ -8,15 +8,10 @@ import { FinalCTASection } from '@/components/Landing/sections/FinalCTASection'
 import { FooterSection } from '@/components/Landing/sections/FooterSection'
 import { Navbar } from '@/components/Landing/nav/NavBar'
 import { EventsSection } from '@/components/Landing/sections/events'
+import {PanAfricanDivider} from '@/components/shared/PanAficDivider'
 
 // Pan-African divider component
-const PanAfricanDivider = () => (
-  <div className="flex h-2 w-full">
-    <div className="flex-1 bg-red-600" />
-    <div className="flex-1 bg-yellow-400" />
-    <div className="flex-1 bg-green-600" />
-  </div>
-)
+
 
 const page = () => {
   return (

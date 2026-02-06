@@ -5,7 +5,8 @@ const nextConfig: NextConfig = {
   allowedDevOrigins: ["192.168.96.1", "192.168.*.*", "*.local"],
   webpack(config) {
     // Grab the existing rule that handles SVG imports
-    const fileLoaderRule = config.module.rules.find((rule) =>
+    // biome-ignore lint/suspicious/noExplicitAny: webpack config typing is complex
+    const fileLoaderRule = config.module.rules.find((rule: any) =>
       rule.test?.test?.('.svg'),
     )
 

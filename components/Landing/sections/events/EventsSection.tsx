@@ -15,7 +15,7 @@ interface EventsSectionProps {
 }
 
 export function EventsSection({
-    title = "Tokyo Nights",
+    title = "Ongoing Events",
     outroText = "Fin",
     items = eventItems,
 }: EventsSectionProps) {
@@ -33,10 +33,11 @@ export function EventsSection({
     return (
         <Section id="events" className="h-auto overflow-visible bg-primary-950 relative">
             {/* Sticky title that stays on top while gallery scrolls horizontally */}
-            <div className="sticky top-0 z-0 py-8 ">
-                <h2 className="text-4xl md:text-6xl font-bold text-center text-white">
+            <div className="sticky top-16 z-0 h-8rem ">
+                <h2 className="text-4xl md:text-6xl font-bold text-center text-primary-50 mb-1">
                     {title}
                 </h2>
+                <p className="text-center text-primary-200">Explore ongoing events and discover what's happening now.</p>
             </div>
             <EventGallery items={items} x={x} scrollProgress={scrollYProgress} containerRef={containerRef} />
             {/* <EventsOutro text={outroText} /> */}

@@ -24,7 +24,7 @@ export function HeroSection() {
                             <p className="text-sm md:text-base text-sepia-200 mb-8 max-w-xl mx-auto">
                                 Empower your events with live voting, seamless ticket sales, and powerful analytics. From community polls to sold-out conferences, PanEvent makes it effortless.
                             </p>
-                            <div className="flex flex-col sm:flex-row gap-4 ">
+                            <div className="flex flex-row gap-4 ">
                                 <PanafricanButton
 
                                     dashArray="0 0"

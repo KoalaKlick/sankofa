@@ -15,10 +15,10 @@ export function HeroSection() {
                 <div className="w-2 md:w-2 bg- bg-fixed  bg-[image:var(--bg-pan-african-stripes)]" />
 
                 {/* Center panel - frosted glass over parent bg */}
-                <div className="w-full max-w-6xl z-10 font-bungee- relative  backdrop-sepia backdrop-blur-md bg-black/50 flex flex-col xs:justify-between px-4 md:py-20">
-                    <div className="pt-20 flex  justify-center  items-center gap-4 md:gap-8">
-                        <div className="max-w-2xl  mx-auto text-center flex flex-col items-center gap-6">
-                            <h1 className="text-4xl sm:text-5xl leading-tight md:text-6xl font-semibold text-sepia-100 dark:text-white mb-6 animate-fade-in">
+                <div className="w-full max-w-6xl z-10  relative  backdrop-sepia backdrop-blur-md bg-black/50 flex flex-col xs:justify-between px-4 md:py-20">
+                    <div className="pt-16 md:pt-10 flex  justify-center  items-center gap-4 md:gap-8">
+                        <div className="max-w-2xl md:max-w-4xl  mx-auto text-center flex flex-col items-center gap-6">
+                            <h1 className="text-4xl sm:text-5xl leading- md:text-7xl font-bold text-sepia-100 dark:text-white mb-6 animate-fade-in">
                                 <span className='text-primary-500'>Create</span>,<span className='text-secondary-500'>Manage</span>  <span className=' '>&</span> <span className='text-tertiary-500'>Grow</span> Events with <span className="">Real-Time Power</span>
                             </h1>
                             <p className="text-sm md:text-base text-sepia-200 mb-8 max-w-xl mx-auto">

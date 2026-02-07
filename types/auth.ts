@@ -1,8 +1,8 @@
-import { type User as SupabaseUser, type Session as SupabaseSession, type AuthError } from '@supabase/supabase-js'
+import type{ User as SupabaseUser, Session as SupabaseSession, AuthError as SupabaseAuthError  } from '@supabase/supabase-js'
 
 export type User = SupabaseUser
 export type Session = SupabaseSession
-export type AuthError = AuthError
+export type AuthError = SupabaseAuthError
 
 export interface AuthState {
     user: User | null

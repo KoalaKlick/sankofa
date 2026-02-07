@@ -38,6 +38,19 @@ export function HeroSection() {
                                     variant="ghost"
                                 > Create Events
                                 </PanafricanButton>
+                                <PanafricanButton
+
+                                    dashArray="0 0"
+                                    animated={false}
+                                    animateOnHover={false}
+                                    strokeWidth={1.5}
+                                    borderRadius={0}
+                                    animationDuration={2}
+                                    className="bg-black rounded-none hover:bg-black/80 text-sepia-100 hover:text-sepia-200"
+
+                                    variant="ghost"
+                                > Ongoing Events
+                                </PanafricanButton>
                             </div>
                         </div>
                         {/* <div className="md:mx-auto flex flex-col items-center gap-4 mt-12 text-center">

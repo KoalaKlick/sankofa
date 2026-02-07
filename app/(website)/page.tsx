@@ -15,7 +15,7 @@ import {PanAfricanDivider} from '@/components/shared/PanAficDivider'
 
 const page = () => {
   return (
-    <div className="flex font-outfit flex-col max-w-svw overflow-x-clip min-h-screen bg-white">
+    <div className="flex font-monoton flex-col max-w-svw overflow-x-clip min-h-screen bg-white">
       <Navbar />
       <HeroSection />
       

@@ -248,7 +248,7 @@ export const Navbar = React.forwardRef<HTMLElement, NavbarProps>(
                                                     className={cn(
                                                         "group relative inline-flex w-max items-left justify-center rounded-md text-sm font-medium transition-colors disabled:pointer-events-none disabled:opacity-50 cursor-pointer no-underline",
                                                         activeHref === link.href
-                                                            ? scrolled ? " text-sepia" : "bg-primary text-white"
+                                                            ? scrolled ? " text-sepia" : " text-white"
                                                             : scrolled ? "text-gray-700 hover:text-primary" : "text-gray-300 hover:text-white",
                                                     )}
                                                 >

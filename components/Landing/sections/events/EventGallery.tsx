@@ -17,8 +17,8 @@ const VH_PER_ITEM_MOBILE = 40
 
 export function EventGallery({ items, x, scrollProgress, containerRef }: EventGalleryProps) {
     // Dynamic scroll height based on item count
-    const scrollHeight = items.length * VH_PER_ITEM*2
-    const scrollHeightMobile = items.length * VH_PER_ITEM_MOBILE*2
+    const scrollHeight = items.length * VH_PER_ITEM * 2
+    const scrollHeightMobile = items.length * VH_PER_ITEM_MOBILE * 2
 
     return (
         <div

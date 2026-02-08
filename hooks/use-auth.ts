@@ -50,7 +50,7 @@ export function useAuth() {
             password,
         })
         if (!error) {
-            router.push('/')
+            router.push('/dashboard')
         }
         return { error }
     }

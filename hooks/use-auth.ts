@@ -59,13 +59,22 @@ export function useAuth() {
     }
 
     const signInWithPassword = async ({ email, password }: { email: string, password: string }) => {
-        const { error } = await supabase.auth.signInWithPassword({
+        const { data, error } = await supabase.auth.signInWithPassword({
             email,
             password,
         })
-        if (!error) {
-            router.push('/dashboard') // Redirect to protected index page
+
+        if (!error && data.user) {
+            // Check if email is verified
+            if (!data.user.email_confirmed_at) {
+                // Email not verified - redirect to verify page
+                router.push(`/auth/verify?email=${encodeURIComponent(email)}`)
+            } else {
+                // Email verified - redirect to protected index page
+                router.push('/dashboard')
+            }
         }
+
         return { error }
     }
 

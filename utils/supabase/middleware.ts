@@ -39,11 +39,22 @@ export async function updateSession(request: NextRequest) {
         data: { user },
     } = await supabase.auth.getUser()
 
+    // Check if route is protected
+    if (protectedRoutes.includes(request.nextUrl.pathname)) {
+        // No user at all - redirect to login
+        if (!user) {
+            const url = request.nextUrl.clone()
+            url.pathname = '/auth/login'
+            return NextResponse.redirect(url)
+        }
 
-    if (!user && protectedRoutes.includes(request.nextUrl.pathname)) {
-        const url = request.nextUrl.clone()
-        url.pathname = '/auth/login'
-        return NextResponse.redirect(url)
+        // User exists but email not verified - redirect to verify page
+        if (!user.email_confirmed_at) {
+            const url = request.nextUrl.clone()
+            url.pathname = '/auth/verify'
+            url.searchParams.set('email', user.email || '')
+            return NextResponse.redirect(url)
+        }
     }
 
     return response

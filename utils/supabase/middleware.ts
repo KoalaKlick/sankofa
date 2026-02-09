@@ -40,7 +40,7 @@ export async function updateSession(request: NextRequest) {
     } = await supabase.auth.getUser()
 
     // Check if route is protected
-    if (protectedRoutes.includes(request.nextUrl.pathname)) {
+    if (protectedRoutes.some(route => request.nextUrl.pathname.startsWith(route))) {
         // No user at all - redirect to login
         if (!user) {
             const url = request.nextUrl.clone()
@@ -48,7 +48,8 @@ export async function updateSession(request: NextRequest) {
             return NextResponse.redirect(url)
         }
 
-        // User exists but email not verified - redirect to verify page
+        // With "Confirm email" ON, having a session means email is verified
+        // But check email_confirmed_at as a safety measure
         if (!user.email_confirmed_at) {
             const url = request.nextUrl.clone()
             url.pathname = '/auth/verify'

@@ -61,6 +61,12 @@ function ForgotPasswordContent() {
 
         const { error } = await sendRecoveryOtp(data.email)
         if (error) {
+            // Handle network errors
+            if (error.message === 'Failed to fetch' || error.message.toLowerCase().includes('network')) {
+                emailForm.setError('root', { message: 'Unable to connect. Please check your internet connection and try again.' })
+                setSubmitting(false)
+                return
+            }
             const match = /(\d+)\s*second/.exec(error.message)
             if (match) {
                 setCooldown(Number.parseInt(match[1], 10))

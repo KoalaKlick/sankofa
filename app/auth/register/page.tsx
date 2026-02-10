@@ -60,6 +60,11 @@ export default function RegisterPage() {
             })
 
             if (error) {
+                // Handle network errors
+                if (error.message === 'Failed to fetch' || error.message.toLowerCase().includes('network')) {
+                    form.setError('root', { message: 'Unable to connect. Please check your internet connection and try again.' })
+                    return
+                }
                 form.setError('root', { message: error.message })
                 return
             }

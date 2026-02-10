@@ -15,7 +15,7 @@ import {
 import { Input } from '@/components/ui/input'
 import { useAuth } from '@/hooks/use-auth'
 import { useState, Suspense } from 'react'
-import { CheckCircle, Loader2, Mail, Lock } from 'lucide-react'
+import { Loader2, Mail, Lock } from 'lucide-react'
 import GoogleIcon from '@/app/assert/google-icon.svg'
 import Link from 'next/link'
 import { EmailVerifiedIllustration } from '@/components/auth/EmailVerifiedIllustration'
@@ -52,6 +52,12 @@ function LoginForm() {
         setSubmitting(false)
 
         if (error) {
+            // Handle network errors
+            if (error.message === 'Failed to fetch' || error.message.toLowerCase().includes('network')) {
+                form.setError('root', { message: 'Unable to connect. Please check your internet connection and try again.' })
+                return
+            }
+
             // Check if email is not confirmed (status 400 with specific message/code)
             const isEmailNotConfirmed =
                 error.code === 'email_not_confirmed' ||

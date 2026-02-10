@@ -81,7 +81,7 @@ function ForgotPasswordContent() {
     // Step: OTP verification
     if (step === 'otp-verify') {
         return (
-            <div className="w-full max-w-sm space-y-6 flex flex-col justify-center flex-1 bg-amber-200 ">
+            <div className="w-full max-w-sm space-y-6 flex flex-col justify-center flex-1 ">
                 <div className="text-center">
                     <div className="flex justify-center mb-4">
                         <OTPVerificationIllustration className="h-24 w-24" />

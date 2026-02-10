@@ -31,7 +31,7 @@ export default function AuthLayout({
       </div>
 
       {/* Right auth content */}
-     <div className="flex-1 flex items-center   justify-center px-4 py-10 lg:px-16">
+      <div className="flex-1 flex items-center   justify-center px-4 py-10 lg:px-16">
         <div className="w-full max-w-md  h-full flex flex-col justify-between">
           {children}
         </div>

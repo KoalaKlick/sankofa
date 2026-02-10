@@ -28,9 +28,26 @@ export function AfroTixLogo({ className = "bg-red-400 h-auto" }: { readonly clas
                     textAnchor="middle"
                 >
                     <tspan fill="#C41E3A">Afro</tspan>
-                    <tspan fill="#FFB800">Tix</tspan>
+                    <tspan fill="#FFB800">Ti</tspan>
+                    <tspan fill="none">x</tspan>
                     <tspan fill="#228B22">.</tspan>
                 </text>
+                
+                {/* Jubilating man as "x" - X-shaped pose */}
+                <g transform="translate(430, 45) scale(0.7)" fill="#FFB800">
+                    {/* Head - small at top center */}
+                    <circle cx="30" cy="5" r="10" fill="#228B22" />
+                    {/* Core/center body - where limbs cross */}
+                    <circle cx="30" cy="55" r="12" />
+                    {/* Left arm - diagonal up-left */}
+                    <path d="M22 48 L-5 10" stroke="#FFB800" strokeWidth="10" strokeLinecap="round" />
+                    {/* Right arm - diagonal up-right */}
+                    <path d="M38 48 L65 10" stroke="#FFB800" strokeWidth="10" strokeLinecap="round" />
+                    {/* Left leg - diagonal down-left */}
+                    <path d="M22 62 L-5 100" stroke="#FFB800" strokeWidth="10" strokeLinecap="round" />
+                    {/* Right leg - diagonal down-right */}
+                    <path d="M38 62 L65 100" stroke="#FFB800" strokeWidth="10" strokeLinecap="round" />
+                </g>
             </g>
 
 

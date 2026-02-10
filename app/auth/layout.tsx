@@ -11,7 +11,7 @@ export default function AuthLayout({
     <div className="min-h-screen bg-background flex flex-col lg:flex-row font-poppins">
       {/* Left hero / brand side */}
 
-      <div className="relative w-full lg:w-1/2 h-65 lg:h-screen overflow-hidden bg-black/5">
+      <div className="relative w-full lg:w-1/2 h-65 lg:h-screen overflow-hidden bg-green-900">
         <AfricaMap
           images={["/landing/g.webp", "/landing/a.webp", "/landing/i.webp"]}
           interval={12000}

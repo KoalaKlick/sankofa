@@ -1,0 +1,2 @@
+.next/dev/types/app/auth/layout.ts(36,31): error TS2344: Type '{ readonly children: ReactNode; }' does not satisfy the constraint 'LayoutProps'.
+  Property 'header' is missing in type '{ readonly children: ReactNode; }' but required in type 'LayoutProps'.

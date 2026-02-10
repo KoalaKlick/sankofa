@@ -1,20 +1,12 @@
 "use client";
 
-import { motion } from "motion/react";
-import { useEffect, useState, useMemo, useCallback, memo } from "react";
+import { useEffect, useState, useMemo, memo } from "react";
 import { africaPaths, type CountryPath } from "../../auth/africa-paths";
 
 // Pan-African inspired color palette
 const PAN_AFRICAN_COLORS = [
-    "#E31B23", // Red
-    "#FCD116", // Gold/Yellow
-    "#009739", // Green
-    "#000000", // Black
-    "#CE1126", // Deep Red
-    "#007A3D", // Dark Green
-    "#F0E130", // Bright Yellow
-    "#C8102E", // Crimson
-    "#006B3F", // Forest Green
+    "#E31B23", "#FCD116", "#009739", "#000000",
+    "#CE1126", "#007A3D", "#F0E130", "#C8102E", "#006B3F"
 ] as const;
 
 interface AfricaMapProps {
@@ -25,82 +17,56 @@ interface AfricaMapProps {
     readonly staggerDelay?: number;
 }
 
-// Memoized country path component to prevent unnecessary re-renders
-const CountryPathGroup = memo(function CountryPathGroup({
+// Static country path - no animation library needed
+const CountryPathComponent = memo(function CountryPathComponent({
     country,
     color,
     revealDelay,
     currentImageIdx,
-    prevImageIdx,
-    isInitialLoad,
+    isRevealed,
+    showColorPulse,
     showHoverColor,
-    showTransitionColor,
-    transitionKey,
 }: {
     country: CountryPath;
     color: string;
     revealDelay: number;
     currentImageIdx: number;
-    prevImageIdx: number | null;
-    isInitialLoad: boolean;
+    isRevealed: boolean;
+    showColorPulse: boolean;
     showHoverColor: boolean;
-    showTransitionColor: boolean;
-    transitionKey: number;
 }) {
     return (
-        <g>
-            {/* Base layer: Previous image stays visible until new one reveals */}
-            {prevImageIdx !== null && (
-                <path
-                    d={country.d}
-                    fill={`url(#map-image-${prevImageIdx})`}
-                    stroke="rgba(255,255,255,0.1)"
-                    strokeWidth="0.5"
-                />
-            )}
-
-            {/* Reveal layer: New image fades in on top, country by country */}
-            <motion.path
-                key={`reveal-${country.id}-${transitionKey}`}
+        <g className="country-group">
+            {/* Main image layer */}
+            <path
                 d={country.d}
                 fill={`url(#map-image-${currentImageIdx})`}
                 stroke="rgba(255,255,255,0.15)"
                 strokeWidth="0.6"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{
-                    delay: revealDelay,
-                    duration: 0.25,
-                    ease: "easeOut"
+                style={{
+                    opacity: isRevealed ? 1 : 0,
+                    transition: `opacity 0.3s ease-out ${revealDelay}s`,
                 }}
             />
 
-            {/* Color pulse: On initial load AND on image transitions (when enabled) */}
-            {(isInitialLoad || showTransitionColor) && (
-                <motion.path
-                    key={`pulse-${country.id}-${transitionKey}`}
+            {/* Color pulse layer - CSS animation */}
+            {showColorPulse && (
+                <path
                     d={country.d}
                     fill={color}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: [0, isInitialLoad ? 0.9 : 0.6, 0] }}
-                    transition={{
-                        duration: isInitialLoad ? 0.4 : 0.3,
-                        times: [0, 0.4, 1],
-                        delay: revealDelay,
-                        ease: [0.4, 0, 0.2, 1],
+                    className="animate-pulse-fade"
+                    style={{
+                        animationDelay: `${revealDelay}s`,
                     }}
                 />
             )}
 
-            {/* Hover interaction layer */}
+            {/* Hover layer */}
             {showHoverColor && (
-                <motion.path
+                <path
                     d={country.d}
                     fill={color}
-                    initial={{ opacity: 0 }}
-                    whileHover={{ opacity: 0.85 }}
-                    transition={{ duration: 0.15 }}
-                    className="cursor-pointer"
+                    className="cursor-pointer transition-opacity duration-150 opacity-0 hover:opacity-85"
                     style={{ pointerEvents: "all" }}
                 />
             )}
@@ -113,17 +79,15 @@ export default function AfricaMap({
     interval = 10000,
     showHoverColor = true,
     showTransitionColor = true,
-    staggerDelay = 0.025,
+    staggerDelay = 0.02,
 }: AfricaMapProps) {
     const [currentIdx, setCurrentIdx] = useState(0);
-    const [prevIdx, setPrevIdx] = useState<number | null>(null);
-    const [hasAnimatedOnce, setHasAnimatedOnce] = useState(false);
-    const [transitionKey, setTransitionKey] = useState(0);
+    const [isRevealed, setIsRevealed] = useState(false);
+    const [showInitialPulse, setShowInitialPulse] = useState(true);
 
-    // Stable randomized reveal order - computed once on mount
+    // Stable randomized reveal order - computed once
     const revealOrder = useMemo(() => {
         const indices = africaPaths.map((_, i) => i);
-        // Fisher-Yates shuffle for better randomization
         for (let i = indices.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
             [indices[i], indices[j]] = [indices[j], indices[i]];
@@ -131,45 +95,57 @@ export default function AfricaMap({
         return indices;
     }, []);
 
-    // Pre-compute color assignments
+    // Colors per country
     const colorMap = useMemo(
         () => africaPaths.map((_, i) => PAN_AFRICAN_COLORS[i % PAN_AFRICAN_COLORS.length]),
         []
     );
 
-    // Image cycling with previous tracking
+    // Trigger reveal on mount
+    useEffect(() => {
+        // Small delay to ensure CSS is ready
+        const revealTimer = requestAnimationFrame(() => setIsRevealed(true));
+        
+        // Hide pulse after animation completes
+        const pulseTimer = setTimeout(() => {
+            setShowInitialPulse(false);
+        }, africaPaths.length * staggerDelay * 1000 + 600);
+
+        return () => {
+            cancelAnimationFrame(revealTimer);
+            clearTimeout(pulseTimer);
+        };
+    }, [staggerDelay]);
+
+    // Image cycling
     useEffect(() => {
         if (images.length <= 1) return;
-
         const timer = setInterval(() => {
-            setPrevIdx(currentIdx);
             setCurrentIdx((prev) => (prev + 1) % images.length);
-            setTransitionKey((prev) => prev + 1);
         }, interval);
-
         return () => clearInterval(timer);
-    }, [images.length, interval, currentIdx]);
+    }, [images.length, interval]);
 
-    // Track when initial animation completes
-    useEffect(() => {
-        if (!hasAnimatedOnce) {
-            const totalDuration = africaPaths.length * staggerDelay * 1000 + 500;
-            const timer = setTimeout(() => setHasAnimatedOnce(true), totalDuration);
-            return () => clearTimeout(timer);
-        }
-    }, [hasAnimatedOnce, staggerDelay]);
-
-    // Calculate reveal delay for each country
-    const getRevealDelay = useCallback(
-        (originalIndex: number) => {
-            const orderIndex = revealOrder.indexOf(originalIndex);
-            return orderIndex * staggerDelay;
-        },
-        [revealOrder, staggerDelay]
-    );
+    // Calculate delay for each country
+    const getRevealDelay = (originalIndex: number) => {
+        return revealOrder.indexOf(originalIndex) * staggerDelay;
+    };
 
     return (
         <div className="relative w-full h-full overflow-hidden">
+            {/* CSS for pulse animation */}
+            <style>{`
+                @keyframes pulse-fade {
+                    0% { opacity: 0; }
+                    40% { opacity: 0.85; }
+                    100% { opacity: 0; }
+                }
+                .animate-pulse-fade {
+                    animation: pulse-fade 0.4s ease-out forwards;
+                    will-change: opacity;
+                }
+            `}</style>
+
             <svg
                 viewBox="0 0 1000 1001"
                 className="absolute inset-0 w-full h-full drop-shadow-[0_20px_50px_rgba(0,0,0,0.5)]"
@@ -179,11 +155,10 @@ export default function AfricaMap({
             >
                 <title id="africa-map-title">Africa Map</title>
                 <defs>
-                    {/* Image patterns for clip-path fills */}
-                    {images.map((img) => (
+                    {images.map((img, idx) => (
                         <pattern
-                            key={`pattern-${img}`}
-                            id={`map-image-${images.indexOf(img)}`}
+                            key={img}
+                            id={`map-image-${idx}`}
                             patternUnits="userSpaceOnUse"
                             width="1000"
                             height="1001"
@@ -197,19 +172,18 @@ export default function AfricaMap({
                         </pattern>
                     ))}
 
-                    {/* Sepia filter for background */}
                     <filter id="sepia-overlay">
                         <feColorMatrix
                             type="matrix"
                             values="0.393 0.769 0.189 0 0
-                      0.349 0.686 0.168 0 0
-                      0.272 0.534 0.131 0 0
-                      0 0 0 1 0"
+                                    0.349 0.686 0.168 0 0
+                                    0.272 0.534 0.131 0 0
+                                    0 0 0 1 0"
                         />
                     </filter>
                 </defs>
 
-                {/* Background sepia layer */}
+                {/* Sepia background */}
                 <image
                     href={images[currentIdx]}
                     width="1000"
@@ -217,22 +191,21 @@ export default function AfricaMap({
                     preserveAspectRatio="xMidYMid slice"
                     filter="url(#sepia-overlay)"
                     opacity="0.4"
+                    className="transition-opacity duration-500"
                 />
 
-                {/* Country paths with staggered reveal animation */}
+                {/* Country paths */}
                 <g id="africa-countries">
                     {africaPaths.map((country, idx) => (
-                        <CountryPathGroup
+                        <CountryPathComponent
                             key={country.id}
                             country={country}
                             color={colorMap[idx]}
                             revealDelay={getRevealDelay(idx)}
                             currentImageIdx={currentIdx}
-                            prevImageIdx={prevIdx}
-                            isInitialLoad={!hasAnimatedOnce}
+                            isRevealed={isRevealed}
+                            showColorPulse={showInitialPulse || showTransitionColor}
                             showHoverColor={showHoverColor}
-                            showTransitionColor={showTransitionColor}
-                            transitionKey={transitionKey}
                         />
                     ))}
                 </g>

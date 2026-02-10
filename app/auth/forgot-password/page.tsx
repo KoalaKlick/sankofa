@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/input-otp"
 import { useAuth } from '@/hooks/use-auth'
 import { useState, Suspense } from 'react'
-import {  Loader2, ArrowLeft, AlertCircle, Mail } from 'lucide-react'
+import { Loader2, ArrowLeft, AlertCircle, Mail } from 'lucide-react'
 import Link from 'next/link'
 import { OTPVerificationIllustration } from '@/components/auth/OTPVerificationIllustration'
 
@@ -104,8 +104,11 @@ function ForgotPasswordContent() {
                                             <InputOTPGroup>
                                                 <InputOTPSlot index={0} />
                                                 <InputOTPSlot index={1} />
-                                                <InputOTPSlot index={2} />
-                                                <InputOTPSlot index={3} />
+                                                <InputOTPSlot index={2} className="rounded-r-none!" />
+                                            </InputOTPGroup>
+                                            <span className="text-muted-foreground/50">-</span>
+                                            <InputOTPGroup>
+                                                <InputOTPSlot index={3} className="rounded-l-none!" />
                                                 <InputOTPSlot index={4} />
                                                 <InputOTPSlot index={5} />
                                             </InputOTPGroup>

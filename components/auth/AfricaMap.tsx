@@ -27,6 +27,7 @@ const CountryPathComponent = memo(function CountryPathComponent({
     isTransitioning,
     showColorPulse,
     showHoverColor,
+    hasInitiallyRevealed,
 }: {
     country: CountryPath;
     color: string;
@@ -36,21 +37,35 @@ const CountryPathComponent = memo(function CountryPathComponent({
     isTransitioning: boolean;
     showColorPulse: boolean;
     showHoverColor: boolean;
+    hasInitiallyRevealed: boolean;
 }) {
     return (
         <g className="country-group">
-            {/* Base image layer - always visible, represents the 'current' image */}
+            {/* Initial color layer - visible before first reveal, fades out */}
+            <path
+                d={country.d}
+                fill={color}
+                stroke="rgba(255,255,255,0.3)"
+                strokeWidth="1.5"
+                style={{
+                    opacity: hasInitiallyRevealed ? 0 : 1,
+                    transition: hasInitiallyRevealed ? `opacity 0.6s ease-out ${revealDelay}s` : 'none',
+                }}
+            />
+
+            {/* Base image layer - fades in on initial reveal, then stays visible */}
             <path
                 d={country.d}
                 fill={`url(#map-image-${baseImageIdx})`}
                 stroke="rgba(255,255,255,0.2)"
                 strokeWidth="1.5"
                 style={{
-                    opacity: 1, // Base is always visible
+                    opacity: hasInitiallyRevealed ? 1 : 0,
+                    transition: hasInitiallyRevealed ? `opacity 0.6s ease-out ${revealDelay}s` : 'none',
                 }}
             />
 
-            {/* Transition image layer - fades in over the base */}
+            {/* Transition image layer - fades in over the base during image cycling */}
             <path
                 d={country.d}
                 fill={`url(#map-image-${targetImageIdx})`}
@@ -64,7 +79,7 @@ const CountryPathComponent = memo(function CountryPathComponent({
             />
 
             {/* Color pulse layer - CSS animation */}
-            {showColorPulse && (
+            {showColorPulse && hasInitiallyRevealed && (
                 <path
                     d={country.d}
                     fill={color}
@@ -131,11 +146,17 @@ export default function AfricaMap({
         []
     );
 
-    // Trigger initial reveal on mount
+    // Trigger initial reveal on mount with a small delay to ensure colors are visible first
     useEffect(() => {
-        setInitialReveal(true);
-        const pulseTimer = setTimeout(() => setShowPulse(false), totalAnimationDuration);
-        return () => clearTimeout(pulseTimer);
+        const revealTimer = setTimeout(() => {
+            setInitialReveal(true);
+        }, 100); // Small delay to show colors first
+        
+        const pulseTimer = setTimeout(() => setShowPulse(false), totalAnimationDuration + 100);
+        return () => {
+            clearTimeout(revealTimer);
+            clearTimeout(pulseTimer);
+        };
     }, [totalAnimationDuration]);
 
     // Image cycling logic
@@ -240,9 +261,10 @@ export default function AfricaMap({
                             revealDelay={getRevealDelay(idx)}
                             baseImageIdx={baseIdx}
                             targetImageIdx={targetIdx}
-                            isTransitioning={isTransitioning || (!initialReveal && targetIdx === 0)}
+                            isTransitioning={isTransitioning}
                             showColorPulse={showPulse}
                             showHoverColor={showHoverColor}
+                            hasInitiallyRevealed={initialReveal}
                         />
                     ))}
                 </g>

@@ -21,14 +21,14 @@ export default function AuthLayout({
         />
 
         {/* Hero copy (matches AfroTix-style layout) */}
-        <div className="absolute top-1/2 left-6 right-6 md:space-y-6 max-w-xs pointer-events-none">
+        <div className="absolute top-1/2 left-6 right-6 lg:space-y-6 max-w-[12rem] sm:max-w-[15rem] md:max-w-xs pointer-events-none">
           <div className="flex items-center gap-2">
             {/* <Image height={40} width={40} src="/logo.png" alt="Sankofa Logo" className="bg-black h-20 w-auto" /> */}
-            <AfroTixLogo className="w-48 h-auto border border-black" />
+            <AfroTixLogo className="w-32 sm:w-38 md:w-40 lg:w-48 h-auto border border-black" />
           </div>
-          <p className="mt-2 text-xl sm:text-lg font-medium text-foreground/80">
+          <span className="mt-2 text-sm sm:text-base md:text-lg inline-block bg-secondary-50 font-medium text-foreground/80 ">
             Discover and book the hottest events across the continent.
-          </p>
+          </span>
         </div>
       </div>
       {/* <PanAfricanDivider className="my-4 rotate-90 absolute top-0   w-svh" /> */}

@@ -14,7 +14,7 @@ export default function AuthLayout({
         <AfricaMap
           images={["/landing/g.webp", "/landing/b.webp", "/landing/h.webp"]}
           interval={12000}
-          showHoverColor={false}
+          showHoverColor={true}
           showTransitionColor={false}
         />
 

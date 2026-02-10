@@ -118,24 +118,24 @@ export default function AfricaMap({
     // Image cycling with staggered transition
     useEffect(() => {
         if (images.length <= 1) return;
-        
+
         const triggerReveal = () => setIsRevealed(true);
         const scheduleReveal = () => requestAnimationFrame(triggerReveal);
-        
+
         const timer = setInterval(() => {
             // Reset reveal state to trigger staggered animation
             setIsRevealed(false);
             setShowPulse(showTransitionColor);
             setTransitionKey((prev) => prev + 1);
             setCurrentIdx((prev) => (prev + 1) % images.length);
-            
+
             // Re-trigger reveal after a brief pause for CSS reset
             requestAnimationFrame(scheduleReveal);
-            
+
             // Hide pulse after animation completes
             setTimeout(() => setShowPulse(false), totalAnimationDuration);
         }, interval);
-        
+
         return () => clearInterval(timer);
     }, [images.length, interval, totalAnimationDuration, showTransitionColor]);
 
@@ -194,6 +194,14 @@ export default function AfricaMap({
                                     0 0 0 1 0"
                         />
                     </filter>
+
+                    {/* Clip path for outer border - inverted to only show edges */}
+                    <clipPath id="continent-clip">
+                        <rect x="0" y="0" width="1000" height="1001" />
+                        {africaPaths.map((country) => (
+                            <path key={`clip-${country.id}`} d={country.d} />
+                        ))}
+                    </clipPath>
                 </defs>
 
                 {/* Sepia background */}
@@ -219,6 +227,21 @@ export default function AfricaMap({
                             isRevealed={isRevealed}
                             showColorPulse={showPulse}
                             showHoverColor={showHoverColor}
+                        />
+                    ))}
+                </g>
+
+                {/* Outer continent border */}
+                <g style={{ opacity: isRevealed ? 1 : 0, transition: 'opacity 0.5s ease-out 0.3s' }}>
+                    {africaPaths.map((country) => (
+                        <path
+                            key={`outline-${country.id}`}
+                            d={country.d}
+                            fill="none"
+                            stroke="rgba(255,255,255,0.3)"
+                            strokeWidth="2.5"
+                            strokeLinejoin="round"
+                            style={{ clipPath: 'url(#continent-clip)' }}
                         />
                     ))}
                 </g>

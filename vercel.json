@@ -5,7 +5,7 @@
       "headers": [
         {
           "key": "Link",
-          "value": "</logo-sm.png>; rel=\"icon\"; type=\"image/png\""
+          "value": "</logo.svg>; rel=\"icon\"; type=\"image/svg+xml\""
         }
       ]
     }

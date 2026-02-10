@@ -5,7 +5,7 @@ import { Star } from 'lucide-react'
 export function TestimonialsSection() {
 
 
-    
+
     return (
         <Section as="section" contentClassName="py-20" className="">
             <div className="text-center mb-16">
@@ -17,7 +17,7 @@ export function TestimonialsSection() {
                         <div className="flex items-center mb-4">
                             {[...Array(5)].map((_, i) => <Star key={i} className="h-5 w-5 text-yellow-400 fill-current" />)}
                         </div>
-                        <p className="text-neutral-600 dark:text-neutral-300 mb-4">"PanEvent made organizing our community conference seamless. The real-time features kept everyone engaged!"</p>
+                        <p className="text-neutral-600 dark:text-neutral-300 mb-4">"AfroTix made organizing our community conference seamless. The real-time features kept everyone engaged!"</p>
                         <div className="flex items-center">
                             <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center text-white font-bold mr-3">JD</div>
                             <div>
@@ -47,7 +47,7 @@ export function TestimonialsSection() {
                         <div className="flex items-center mb-4">
                             {Array(5).map((_, i) => <Star key={i} className="h-5 w-5 text-yellow-400 fill-current" />)}
                         </div>
-                        <p className="text-neutral-600 dark:text-neutral-300 mb-4">"Live polling during our webinar increased participation by 300%. PanEvent is a game-changer."</p>
+                        <p className="text-neutral-600 dark:text-neutral-300 mb-4">"Live polling during our webinar increased participation by 300%. AfroTix is a game-changer."</p>
                         <div className="flex items-center">
                             <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center text-white font-bold mr-3">AL</div>
                             <div>

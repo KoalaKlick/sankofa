@@ -13,26 +13,26 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "PanEvent",
+  title: "AfroTix",
   description: "Create, Manage & Grow Events with Real-Time Power",
   manifest: "/manifest.json",
   icons: {
-    icon: "/logo-sm.png",
-    shortcut: "/logo-sm.png",
-    apple: "/logo-sm.png",
+    icon: "/logo.svg",
+    shortcut: "/logo.svg",
+    apple: "/logo.svg",
   },
   metadataBase: new URL('https://sankofa-one.vercel.app/'), // Replace with your actual domain
   openGraph: {
-    title: "PanEvent",
+    title: "AfroTix",
     description: "Create, Manage & Grow Events with Real-Time Power",
     url: '/',
-    siteName: 'PanEvent',
+    siteName: 'AfroTix',
     images: [
       {
         url: '/og-1.webp', // Create a proper OG image (1200x630px)
         width: 1200,
         height: 630,
-        alt: 'PanEvent - Event Management Platform',
+        alt: 'AfroTix - Event Management Platform',
       }
     ],
     locale: 'en_US',
@@ -40,7 +40,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image", // Changed from "summary" for better preview
-    title: "PanEvent",
+    title: "AfroTix",
     description: "Create, Manage & Grow Events with Real-Time Power",
     images: ["/og-1.webp"], // Use same OG image
   },
@@ -54,10 +54,8 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        <link rel="icon" type="image/png" sizes="32x32" href="/logo-sm.png" />
-        <link rel="icon" type="image/png" sizes="16x16" href="/logo-sm.png" />
-        <link rel="apple-touch-icon" href="/logo-sm.png" />
-        <link rel="shortcut icon" href="/logo-sm.png" />
+        <link rel="icon" type="image/svg+xml" href="/logo.svg" />
+        <link rel="apple-touch-icon" href="/logo.svg" />
         <link rel="manifest" href="/manifest.json" />
         <meta name="theme-color" content="#dc2626" />
       </head>

@@ -1,4 +1,4 @@
-import { Zap } from 'lucide-react'
+import { AfroTixLogo } from '@/components/shared/AfroTixLogo'
 
 export function FooterSection() {
     return (
@@ -7,8 +7,7 @@ export function FooterSection() {
                 <div className="grid md:grid-cols-4 gap-8">
                     <div>
                         <div className="flex items-center space-x-2 mb-4">
-                            <Zap className="h-8 w-8 text-primary" />
-                            <span className="text-2xl font-bold">PanEvent</span>
+                            <AfroTixLogo className="h-10 w-auto" />
                         </div>
                         <p className="text-neutral-400">Empowering event creators with real-time engagement tools.</p>
                     </div>
@@ -38,7 +37,7 @@ export function FooterSection() {
                     </div>
                 </div>
                 <div className="border-t border-neutral-800 mt-8 pt-8 text-center text-neutral-400">
-                    <p>&copy; 2024 PanEvent. All rights reserved.</p>
+                    <p>&copy; 2024 AfroTix. All rights reserved.</p>
                 </div>
             </div>
         </footer>

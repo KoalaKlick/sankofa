@@ -12,10 +12,9 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { cn } from "@/lib/utils"
 import { defaultNavigationLinks, type NavbarNavLink } from "@/lib/const/landing"
-import { Logo } from "@/components/shared/icon"
+import { AfroTixLogo } from "@/components/shared/AfroTixLogo"
 import { Menu } from "lucide-react"
 import { PanAfricanDivider } from '@/components/shared/PanAficDivider'
-import Image from "next/image"
 import PanafricanButton from "@/components/shared/PanafricanButton"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
@@ -39,7 +38,7 @@ export const Navbar = React.forwardRef<HTMLElement, NavbarProps>(
     (
         {
             className,
-            logo = <Logo />,
+            logo = <AfroTixLogo className="h-10 w-auto" />,
             logoHref = "#",
             navigationLinks = defaultNavigationLinks,
             signInText = "Sign In",
@@ -241,7 +240,7 @@ export const Navbar = React.forwardRef<HTMLElement, NavbarProps>(
                                 href={`/${logoHref}`}
                                 className="flex items-center space-x-2 text-primary hover:text-primary/90 transition-colors cursor-pointer"
                             >
-                                <Image src="/logo.png" className="h-10 bg-black px-2" alt="logo" width={124.2} height={38.1} />
+                                <AfroTixLogo className="h-10 w-auto" />
 
                             </Link>
                             {/* Navigation menu */}

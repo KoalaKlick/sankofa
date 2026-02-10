@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useMemo, memo } from "react";
-import { africaPaths, type CountryPath } from "../../auth/africa-paths";
+import { africaPaths, type CountryPath } from "../../app/auth/africa-paths";
 
 // Pan-African inspired color palette
 const PAN_AFRICAN_COLORS = [
@@ -22,30 +22,44 @@ const CountryPathComponent = memo(function CountryPathComponent({
     country,
     color,
     revealDelay,
-    currentImageIdx,
-    isRevealed,
+    baseImageIdx,
+    targetImageIdx,
+    isTransitioning,
     showColorPulse,
     showHoverColor,
 }: {
     country: CountryPath;
     color: string;
     revealDelay: number;
-    currentImageIdx: number;
-    isRevealed: boolean;
+    baseImageIdx: number;
+    targetImageIdx: number;
+    isTransitioning: boolean;
     showColorPulse: boolean;
     showHoverColor: boolean;
 }) {
     return (
         <g className="country-group">
-            {/* Main image layer */}
+            {/* Base image layer - always visible, represents the 'current' image */}
             <path
                 d={country.d}
-                fill={`url(#map-image-${currentImageIdx})`}
+                fill={`url(#map-image-${baseImageIdx})`}
                 stroke="rgba(255,255,255,0.2)"
                 strokeWidth="1.5"
                 style={{
-                    opacity: isRevealed ? 1 : 0,
-                    transition: `opacity 0.3s ease-out ${revealDelay}s`,
+                    opacity: 1, // Base is always visible
+                }}
+            />
+
+            {/* Transition image layer - fades in over the base */}
+            <path
+                d={country.d}
+                fill={`url(#map-image-${targetImageIdx})`}
+                stroke="rgba(255,255,255,0.2)"
+                strokeWidth="1"
+                style={{
+                    opacity: isTransitioning ? 1 : 0,
+                    transition: isTransitioning ? `opacity 0.6s ease-out ${revealDelay}s` : 'none',
+                    willChange: 'opacity'
                 }}
             />
 
@@ -81,10 +95,11 @@ export default function AfricaMap({
     showTransitionColor = true,
     staggerDelay = 0.02,
 }: AfricaMapProps) {
-    const [currentIdx, setCurrentIdx] = useState(0);
-    const [isRevealed, setIsRevealed] = useState(false);
-    const [transitionKey, setTransitionKey] = useState(0);
+    const [baseIdx, setBaseIdx] = useState(0);
+    const [targetIdx, setTargetIdx] = useState(0);
+    const [isTransitioning, setIsTransitioning] = useState(false);
     const [showPulse, setShowPulse] = useState(true);
+    const [initialReveal, setInitialReveal] = useState(false);
 
     const totalAnimationDuration = africaPaths.length * staggerDelay * 1000 + 600;
 
@@ -104,40 +119,36 @@ export default function AfricaMap({
         []
     );
 
-    // Trigger reveal on mount
+    // Trigger initial reveal on mount
     useEffect(() => {
-        const revealTimer = requestAnimationFrame(() => setIsRevealed(true));
+        setInitialReveal(true);
         const pulseTimer = setTimeout(() => setShowPulse(false), totalAnimationDuration);
-
-        return () => {
-            cancelAnimationFrame(revealTimer);
-            clearTimeout(pulseTimer);
-        };
+        return () => clearTimeout(pulseTimer);
     }, [totalAnimationDuration]);
 
-    // Image cycling with staggered transition
+    // Image cycling logic
     useEffect(() => {
         if (images.length <= 1) return;
 
-        const triggerReveal = () => setIsRevealed(true);
-        const scheduleReveal = () => requestAnimationFrame(triggerReveal);
-
         const timer = setInterval(() => {
-            // Reset reveal state to trigger staggered animation
-            setIsRevealed(false);
-            setShowPulse(showTransitionColor);
-            setTransitionKey((prev) => prev + 1);
-            setCurrentIdx((prev) => (prev + 1) % images.length);
+            // 1. Start transition to next index
+            const nextIdx = (targetIdx + 1) % images.length;
+            setTargetIdx(nextIdx);
+            setIsTransitioning(true);
 
-            // Re-trigger reveal after a brief pause for CSS reset
-            requestAnimationFrame(scheduleReveal);
+            if (showTransitionColor) setShowPulse(true);
 
-            // Hide pulse after animation completes
-            setTimeout(() => setShowPulse(false), totalAnimationDuration);
+            // 2. After transition completes, set next as base and reset transition state
+            setTimeout(() => {
+                setBaseIdx(nextIdx);
+                setIsTransitioning(false);
+                setShowPulse(false);
+            }, totalAnimationDuration);
+
         }, interval);
 
         return () => clearInterval(timer);
-    }, [images.length, interval, totalAnimationDuration, showTransitionColor]);
+    }, [images.length, interval, targetIdx, totalAnimationDuration, showTransitionColor]);
 
     // Calculate delay for each country
     const getRevealDelay = (originalIndex: number) => {
@@ -161,7 +172,7 @@ export default function AfricaMap({
 
             <svg
                 viewBox="0 0 1000 1001"
-                className="absolute inset-0 w-full h-full drop-shadow-[0_20px_50px_rgba(0,0,0,0.5)]"
+                className="absolute inset-0 w-full h-full drop-shadow-[0_20px_50px_rgba(aa,0,0,0.5)]"
                 xmlns="http://www.w3.org/2000/svg"
                 preserveAspectRatio="xMidYMid slice"
                 aria-labelledby="africa-map-title"
@@ -197,26 +208,27 @@ export default function AfricaMap({
                 </defs>
 
                 {/* Sepia background */}
-                <image
-                    href={images[currentIdx]}
+                {/* <image
+                    href={images[targetIdx]}
                     width="1000"
                     height="1001"
                     preserveAspectRatio="xMidYMid slice"
                     filter="url(#sepia-overlay)"
                     opacity="0.4"
                     className="transition-opacity duration-500"
-                />
+                /> */}
 
                 {/* Country paths */}
                 <g id="africa-countries">
                     {africaPaths.map((country, idx) => (
                         <CountryPathComponent
-                            key={`${country.id}-${transitionKey}`}
+                            key={country.id}
                             country={country}
                             color={colorMap[idx]}
                             revealDelay={getRevealDelay(idx)}
-                            currentImageIdx={currentIdx}
-                            isRevealed={isRevealed}
+                            baseImageIdx={baseIdx}
+                            targetImageIdx={targetIdx}
+                            isTransitioning={isTransitioning || (!initialReveal && targetIdx === 0)}
                             showColorPulse={showPulse}
                             showHoverColor={showHoverColor}
                         />

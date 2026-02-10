@@ -1,5 +1,7 @@
 import type { ReactNode } from "react"
-import AfricaMap from "../components/auth/AfricaMap"
+import AfricaMap from "../../components/auth/AfricaMap"
+
+import { AfroTixLogo } from "@/components/shared/AfroTixLogo"
 
 export default function AuthLayout({
   children,
@@ -10,7 +12,7 @@ export default function AuthLayout({
     <div className="min-h-screen bg-background flex flex-col lg:flex-row font-poppins">
       {/* Left hero / brand side */}
 
-      <div className="relative w-full lg:w-1/2 h-65 lg:h-screen overflow-hidden bg-green-900">
+      <div className="relative w-full lg:w-1/2 h-65 lg:h-screen overflow-hidden shadow bg-white ">
         <AfricaMap
           images={["/landing/g.webp", "/landing/b.webp", "/landing/h.webp"]}
           interval={12000}
@@ -19,16 +21,17 @@ export default function AuthLayout({
         />
 
         {/* Hero copy (matches AfroTix-style layout) */}
-        <div className="absolute bottom-8 left-6 right-6 md:space-y-6 max-w-xl mx-auto pointer-events-none">
+        <div className="absolute top-1/2 left-6 right-6 md:space-y-6 max-w-xs pointer-events-none">
           <div className="flex items-center gap-2">
-            {/* <span className="font-bold text-2xl tracking-tight">Sankofa</span> */}
+            {/* <Image height={40} width={40} src="/logo.png" alt="Sankofa Logo" className="bg-black h-20 w-auto" /> */}
+            <AfroTixLogo className="w-48 h-auto border border-black" />
           </div>
-
-          <p className="mt-2 text-xl sm:text-2xl font-medium text-foreground/80">
-            {/* Discover and book the hottest events across the continent. */}
+          <p className="mt-2 text-xl sm:text-lg font-medium text-foreground/80">
+            Discover and book the hottest events across the continent.
           </p>
         </div>
       </div>
+      {/* <PanAfricanDivider className="my-4 rotate-90 absolute top-0   w-svh" /> */}
 
       {/* Right auth content */}
       <div className="flex-1 flex items-center   justify-center px-4 py-10 lg:px-16">

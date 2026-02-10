@@ -19,7 +19,7 @@ import {
     InputOTPSlot,
 } from "@/components/ui/input-otp"
 import { useAuth } from '@/hooks/use-auth'
-import { useState, Suspense } from 'react'
+import { useState, Suspense, useEffect } from 'react'
 import { Loader2, ArrowLeft, AlertCircle, Mail } from 'lucide-react'
 import Link from 'next/link'
 import { OTPVerificationIllustration } from '@/components/auth/OTPVerificationIllustration'
@@ -42,6 +42,8 @@ function ForgotPasswordContent() {
     const [step, setStep] = useState<Step>('email')
     const [email, setEmail] = useState('')
     const [submitting, setSubmitting] = useState(false)
+    const [resending, setResending] = useState(false)
+    const [cooldown, setCooldown] = useState<number | null>(null)
 
     const emailForm = useForm<z.infer<typeof EmailSchema>>({
         resolver: zodResolver(EmailSchema),
@@ -59,13 +61,49 @@ function ForgotPasswordContent() {
 
         const { error } = await sendRecoveryOtp(data.email)
         if (error) {
-            emailForm.setError('root', { message: error.message })
+            const match = /(\d+)\s*second/.exec(error.message)
+            if (match) {
+                setCooldown(Number.parseInt(match[1], 10))
+            } else {
+                emailForm.setError('root', { message: error.message })
+            }
             setSubmitting(false)
             return
         }
         setStep('otp-verify')
         setSubmitting(false)
     }
+
+    async function handleResend() {
+        if (!email || cooldown !== null) return
+        setResending(true)
+        otpForm.clearErrors('root')
+
+        const { error } = await sendRecoveryOtp(email)
+        if (error) {
+            const match = /(\d+)\s*second/.exec(error.message)
+            if (match) {
+                setCooldown(Number.parseInt(match[1], 10))
+            } else {
+                otpForm.setError('root', { message: error.message })
+            }
+        }
+        setResending(false)
+    }
+
+    useEffect(() => {
+        if (cooldown === null) return
+        const interval = setInterval(() => {
+            setCooldown((prev) => {
+                if (prev === null || prev <= 1) {
+                    clearInterval(interval)
+                    return null
+                }
+                return prev - 1
+            })
+        }, 1000)
+        return () => clearInterval(interval)
+    }, [cooldown])
 
     async function onOtpSubmit(data: z.infer<typeof OtpSchema>) {
         setSubmitting(true)
@@ -130,9 +168,18 @@ function ForgotPasswordContent() {
                     </form>
                 </Form>
 
-                <div className="flex justify-center">
-                    <Button variant="ghost" size="sm" onClick={() => setStep('email')}>
-                        <ArrowLeft className="h-4 w-4 mr-2" /> Try different email
+                <div className="flex gap-2">
+                    <Button
+                        variant="outline"
+                        className="flex-1 rounded-full"
+                        onClick={handleResend}
+                        disabled={resending || cooldown !== null}
+                    >
+                        {resending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                        {cooldown === null ? 'Resend Code' : `Resend in ${cooldown}s`}
+                    </Button>
+                    <Button variant="ghost" className="flex-1 rounded-full" onClick={() => setStep('email')}>
+                        <ArrowLeft className="h-4 w-4 mr-2" /> Different email
                     </Button>
                 </div>
             </div>
@@ -161,6 +208,13 @@ function ForgotPasswordContent() {
                         </div>
                     )}
 
+                    {cooldown !== null && (
+                        <div className="bg-amber-500/10 border border-amber-500/20 rounded-lg p-3 flex items-center gap-2">
+                            <AlertCircle className="h-4 w-4 text-amber-500" />
+                            <p className="text-sm text-amber-600">Please wait {cooldown}s before requesting another code.</p>
+                        </div>
+                    )}
+
                     <Form {...emailForm}>
                         <form onSubmit={emailForm.handleSubmit(onEmailSubmit)} className="space-y-4 md:space-y-6">
                             <FormField
@@ -180,9 +234,9 @@ function ForgotPasswordContent() {
                                     {emailForm.formState.errors.root.message}
                                 </p>
                             )}
-                            <Button type="submit" className="w-full rounded-full bg-emerald-500 hover:bg-emerald-600 text-white font-semibold" disabled={submitting || loading}>
+                            <Button type="submit" className="w-full rounded-full bg-emerald-500 hover:bg-emerald-600 text-white font-semibold" disabled={submitting || loading || cooldown !== null}>
                                 {submitting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-                                Send Code
+                                {cooldown === null ? 'Send Code' : `Resend in ${cooldown}s`}
                             </Button>
                         </form>
                     </Form>

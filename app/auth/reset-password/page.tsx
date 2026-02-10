@@ -18,6 +18,7 @@ import { useState, useEffect } from 'react'
 import { createClient } from '@/utils/supabase/client'
 import { Loader2, KeyRound, Lock } from 'lucide-react'
 import { PasswordSuccessSVG } from '@/components/auth/PasswordSuccessSVG'
+import { PasswordRefreshIllustration } from '@/components/auth/PasswordRefreshIllustration'
 
 const FormSchema = z.object({
     password: z.string().min(8, {
@@ -111,7 +112,7 @@ export default function ResetPasswordPage() {
         <div className="w-full space-y-6 flex-1 flex flex-col justify-center">
             <div className="text-center">
                 <div className="flex justify-center mb-4">
-                    <KeyRound className="h-16 w-16 text-primary" />
+                    <PasswordRefreshIllustration className="size-24 text-primary" />
                 </div>
                 <h1 className="text-2xl font-semibold tracking-tight">Reset Password</h1>
                 <p className="mt-1 text-sm text-muted-foreground">Enter your new password below.</p>

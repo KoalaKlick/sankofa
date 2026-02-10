@@ -1,7 +1,7 @@
 import Image from "next/image"
 import type { ReactNode } from "react"
 
-export default function AuthLayout({ children }: {readonly children: ReactNode }) {
+export default function AuthLayout({ children }: { readonly children: ReactNode }) {
   return (
     <div className="min-h-screen bg-background flex flex-col lg:flex-row font-poppins">
       {/* Left hero / brand side */}

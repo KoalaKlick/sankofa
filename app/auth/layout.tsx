@@ -12,7 +12,7 @@ export default function AuthLayout({
 
       <div className="relative w-full lg:w-1/2 h-65 lg:h-screen overflow-hidden bg-green-900">
         <AfricaMap
-          images={["/landing/g.webp", "/landing/a.webp", "/landing/i.webp"]}
+          images={["/landing/g.webp", "/landing/b.webp", "/landing/h.webp"]}
           interval={12000}
           showHoverColor={false}
           showTransitionColor={false}

@@ -16,7 +16,7 @@ export default function AuthLayout({
       <div className="relative w-full lg:w-1/2 h-65 lg:h-screen overflow-hidden shadow bg-secondary-50 ">
         <AfricaMap
           images={["/landing/g.webp", "/landing/b.webp", "/landing/h.webp"]}
-          interval={12000}
+          interval={9000}
           showHoverColor={true}
           showTransitionColor={false}
         />

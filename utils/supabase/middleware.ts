@@ -34,7 +34,21 @@ export async function updateSession(request: NextRequest) {
     )
 
     // Refresh session - this is needed for Supabase cookie management
-    await supabase.auth.getUser()
+    const { data: { user } } = await supabase.auth.getUser()
+
+    const pathname = request.nextUrl.pathname
+
+    // Protected routes - redirect to login if not authenticated
+    if (pathname.startsWith('/dashboard') && !user) {
+        return NextResponse.redirect(new URL('/auth/login', request.url))
+    }
+
+    // Auth pages - redirect to dashboard if already authenticated
+    // Exclude callback, reset-password (needs session), and confirmed pages
+    const authPagesForRedirect = ['/auth/login', '/auth/register', '/auth/forgot-password']
+    if (user && authPagesForRedirect.some(page => pathname.startsWith(page))) {
+        return NextResponse.redirect(new URL('/dashboard', request.url))
+    }
 
     return response
 }

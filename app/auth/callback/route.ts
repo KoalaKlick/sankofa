@@ -13,7 +13,13 @@ export async function GET(request: Request) {
     if (code) {
         const { error } = await supabase.auth.exchangeCodeForSession(code)
         if (!error) {
-            const redirectUrl = type === 'recovery' ? '/auth/reset-password' : '/auth/confirmed'
+            // Determine redirect based on type
+            let redirectUrl = '/dashboard' // Default for OAuth login
+            if (type === 'recovery') {
+                redirectUrl = '/auth/reset-password'
+            } else if (type === 'signup') {
+                redirectUrl = '/auth/confirmed'
+            }
             return redirectTo(request, origin, redirectUrl)
         }
 

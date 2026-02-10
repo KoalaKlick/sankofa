@@ -41,8 +41,8 @@ const CountryPathComponent = memo(function CountryPathComponent({
             <path
                 d={country.d}
                 fill={`url(#map-image-${currentImageIdx})`}
-                stroke="rgba(255,255,255,0.15)"
-                strokeWidth="0.6"
+                stroke="rgba(255,255,255,0.2)"
+                strokeWidth="1.5"
                 style={{
                     opacity: isRevealed ? 1 : 0,
                     transition: `opacity 0.3s ease-out ${revealDelay}s`,
@@ -194,14 +194,6 @@ export default function AfricaMap({
                                     0 0 0 1 0"
                         />
                     </filter>
-
-                    {/* Clip path for outer border - inverted to only show edges */}
-                    <clipPath id="continent-clip">
-                        <rect x="0" y="0" width="1000" height="1001" />
-                        {africaPaths.map((country) => (
-                            <path key={`clip-${country.id}`} d={country.d} />
-                        ))}
-                    </clipPath>
                 </defs>
 
                 {/* Sepia background */}
@@ -227,21 +219,6 @@ export default function AfricaMap({
                             isRevealed={isRevealed}
                             showColorPulse={showPulse}
                             showHoverColor={showHoverColor}
-                        />
-                    ))}
-                </g>
-
-                {/* Outer continent border */}
-                <g style={{ opacity: isRevealed ? 1 : 0, transition: 'opacity 0.5s ease-out 0.3s' }}>
-                    {africaPaths.map((country) => (
-                        <path
-                            key={`outline-${country.id}`}
-                            d={country.d}
-                            fill="none"
-                            stroke="rgba(255,255,255,0.3)"
-                            strokeWidth="2.5"
-                            strokeLinejoin="round"
-                            style={{ clipPath: 'url(#continent-clip)' }}
                         />
                     ))}
                 </g>

@@ -1,311 +1,227 @@
 "use client"
 
-import * as React from "react"
-import { useEffect, useRef, useState } from "react"
-import { motion, useMotionValueEvent, useScroll } from "motion/react"
-import { Button } from "@/components/ui/button"
-import {
-    NavigationMenu,
-    NavigationMenuItem,
-    NavigationMenuList,
-} from "@/components/ui/navigation-menu"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { cn } from "@/lib/utils"
-import { defaultNavigationLinks, type NavbarNavLink } from "@/lib/const/landing"
-import { AfroTixLogo } from "@/components/shared/AfroTixLogo"
-import { Menu } from "lucide-react"
-import { PanAfricanDivider } from '@/components/shared/PanAficDivider'
-import PanafricanButton from "@/components/shared/PanafricanButton"
-import Link from "next/link"
-import { useRouter } from "next/navigation"
+import { useState, useEffect, useRef } from 'react'
+import Link from 'next/link'
+import { usePathname } from 'next/navigation'
+import { ArrowRight, Menu, X } from 'lucide-react'
+import { motion, AnimatePresence } from 'motion/react'
+import { cn } from '@/lib/utils'
+import { defaultNavigationLinks, type NavbarNavLink } from '@/lib/const/landing'
+import { AfroTixLogo } from '@/components/shared/AfroTixLogo'
 
-export interface NavbarProps extends React.HTMLAttributes<HTMLElement> {
-    logo?: React.ReactNode
-    logoHref?: string
+export interface NavbarProps {
     navigationLinks?: NavbarNavLink[]
     signInText?: string
-    signInHref?: string
     ctaText?: string
-    ctaHref?: string
-    onSignInClick?: () => void
-    onCtaClick?: () => void
 }
 
-// Default navigation links
+function getNavLinkClass(scrolled: boolean, active: boolean) {
+    if (scrolled) {
+        return active ? 'text-sepia' : 'text-sepia/70 hover:text-sepia'
+    }
+    return active ? 'text-white font-medium' : 'text-white/70 hover:text-white'
+}
 
-
-export const Navbar = React.forwardRef<HTMLElement, NavbarProps>(
-    (
-        {
-            className,
-            logo = <AfroTixLogo className="h-10 w-auto" />,
-            logoHref = "#",
-            navigationLinks = defaultNavigationLinks,
-            signInText = "Sign In",
-            signInHref = "#signin",
-            ctaText = "Become a Promoter",
-            ctaHref = "#get-started",
-            onSignInClick,
-            onCtaClick,
-            ...props
-        },
-        ref,
-    ) => {
-        const [isMobile, setIsMobile] = useState(false)
-        const [activeHref, setActiveHref] = useState("#")
-        const [hidden, setHidden] = useState(false)
-        const [scrolled, setScrolled] = useState(false)
-        const containerRef = useRef<HTMLElement>(null)
-        const { scrollY } = useScroll()
-        const router = useRouter()
-
-        useEffect(() => {
-            const checkWidth = () => {
-                if (containerRef.current) {
-                    const width = containerRef.current.offsetWidth
-                    setIsMobile(width < 768) // 768px is md breakpoint
-                }
-            }
-
-            checkWidth()
-
-            const resizeObserver = new ResizeObserver(checkWidth)
-            if (containerRef.current) {
-                resizeObserver.observe(containerRef.current)
-            }
-
-            return () => {
-                resizeObserver.disconnect()
-            }
-        }, [])
-
-        useEffect(() => {
-            const updateActiveHref = () => {
-                const hash = globalThis.location.hash || "#"
-                setActiveHref(hash)
-            }
-
-            updateActiveHref()
-            globalThis.addEventListener("hashchange", updateActiveHref)
-
-            return () => {
-                globalThis.removeEventListener("hashchange", updateActiveHref)
-            }
-        }, [])
-
-        useEffect(() => {
-            const sectionLinks = navigationLinks
-                .map((link) => link.href)
-                .filter((href) => href.startsWith("#") && href.length > 1)
-
-            const sections = sectionLinks
-                .map((href) => ({ href, el: document.querySelector(href) }))
-                .filter((item): item is { href: string; el: Element } => Boolean(item.el))
-
-            if (!sections.length) return
-
-            const observer = new IntersectionObserver(
-                (entries) => {
-                    const visible = entries
-                        .filter((entry) => entry.isIntersecting)
-                        .sort((a, b) => b.intersectionRatio - a.intersectionRatio)
-
-                    if (visible.length > 0) {
-                        const match = sections.find((s) => s.el === visible[0].target)
-                        if (match) {
-                            setActiveHref(match.href)
-                        }
-                    } else if (globalThis.scrollY < 100) {
-                        setActiveHref("#")
-                    }
-                },
-                {
-                    root: null,
-                    rootMargin: "-80px 0px -60% 0px",
-                    threshold: [0.1, 0.25, 0.5, 0.75, 1],
-                },
-            )
-
-            for (const section of sections) {
-                observer.observe(section.el)
-            }
-            return () => {
-                observer.disconnect()
-            }
-        }, [navigationLinks])
-
-        useMotionValueEvent(scrollY, "change", (current) => {
-            const previous = scrollY.getPrevious() ?? 0
-            if (current > previous && current > 150) {
-                setHidden(true)
-            } else {
-                setHidden(false)
-            }
-            // Set scrolled state - true when past 100vh
-            const viewportHeight = globalThis.innerHeight || 0
-            setScrolled(current > viewportHeight)
-        })
-
-        // Combine refs
-        const combinedRef = React.useCallback(
-            (node: HTMLElement | null) => {
-                containerRef.current = node
-                if (typeof ref === "function") {
-                    ref(node)
-                } else if (ref) {
-                    ref.current = node
-                }
-            },
-            [ref],
-        )
-
-        const getLinkClassName = (link: NavbarNavLink) => {
-            if (activeHref === link.href) {
-                return scrolled ? "text-sepia" : "text-white"
-            }
-            return scrolled ? "text-gray-700 hover:text-primary" : "text-gray-300 hover:text-white"
-        }
-
-        return (
-            <motion.header
-                className={cn(
-                    "fixed top-0 z-50 w-full px-4 md:px-6 transition-all delay-100 duration-300",
-                    scrolled ? "bg-white/95 backdrop-blur" : "bg-black/95 backdrop-blur",
-                    className,
-                )}
-                ref={combinedRef}
-                {...(props as any)}
-                animate={{ y: hidden ? -96 : 0, opacity: hidden ? 0 : 1 }}
-                transition={{ duration: 0.3, ease: "easeInOut" }}
-            >
-                <div className="container mx-auto max-w-6xl flex h-16 items-center justify-between gap-4">
-                    {/* Left side */}
-                    <div className="flex items-center gap-2">
-                        {/* Mobile menu trigger */}
-                        {isMobile && (
-                            <Popover>
-                                <PopoverTrigger asChild>
-                                    <Button
-                                        className={cn("group h-9 w-9 hover:text-accent-foreground",
-                                            scrolled ? "text-gray-700 hover:text-primary" : "text-gray-300 hover:text-white"
-                                        )}
-                                        size="icon"
-                                        variant="ghost"
-                                    >
-                                        <Menu className="h-4 w-4" />
-                                    </Button>
-                                </PopoverTrigger>
-                                <PopoverContent align="start" className="w-48 p-2">
-                                    <NavigationMenu className="max-w-none">
-                                        <NavigationMenuList className="flex-col items-start gap-1">
-                                            {navigationLinks.map((link) => (
-                                                <NavigationMenuItem className="w-full" key={link.href}>
-                                                    <a
-                                                        href={link.href}
-                                                        onClick={() => setActiveHref(link.href)}
-                                                        className={cn(
-                                                            "flex w-full items-center rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground cursor-pointer no-underline",
-                                                            activeHref === link.href
-                                                                ? "bg-accent text-accent-foreground"
-                                                                : "text-foreground/80",
-                                                        )}
-                                                    >
-                                                        {link.label}
-                                                    </a>
-                                                </NavigationMenuItem>
-                                            ))}
-                                            <PanafricanButton
-                                                dashArray="5 5"
-                                                animated={true}
-                                                animateOnHover={false}
-                                                strokeWidth={1.5}
-                                                borderRadius={0}
-                                                animationDuration={2}
-                                                className="bg-black  sm:hidden rounded-none hover:bg-black/80 text-sepia-100 hover:text-sepia-200"
-                                                onClick={e => {
-                                                    e.preventDefault()
-
-                                                }}
-                                                variant="ghost"
-                                            > {ctaText}
-                                            </PanafricanButton>
-                                        </NavigationMenuList>
-                                    </NavigationMenu>
-                                </PopoverContent>
-                            </Popover>
-                        )}
-                        {/* Main nav */}
-                        <div className="flex items-center gap-6">
-                            <Link
-                                href={`/${logoHref}`}
-                                className="flex items-center space-x-2 text-primary hover:text-primary/90 transition-colors cursor-pointer"
-                            >
-                                <AfroTixLogo className="h-10 w-auto" />
-
-                            </Link>
-                            {/* Navigation menu */}
-                            {!isMobile && (
-                                <NavigationMenu className="flex">
-                                    <NavigationMenuList className="gap-10">
-                                        {navigationLinks.map((link) => (
-                                            <NavigationMenuItem key={link.href}>
-                                                <Link
-                                                    href={link.href}
-                                                    onClick={() => setActiveHref(link.href)}
-                                                    className={cn(
-                                                        "group relative inline-flex w-max items-left justify-center rounded-md text-sm font-medium transition-colors disabled:pointer-events-none disabled:opacity-50 cursor-pointer no-underline",
-                                                        getLinkClassName(link),
-                                                    )}
-                                                >
-                                                    {link.label}
-                                                    <PanAfricanDivider className={cn("absolute -bottom-1 left-0 h-0.5 w-0 transition-all duration-300 ease-out transform ",
-                                                        activeHref === link.href
-                                                            ? "w-full opacity-100"
-                                                            : "hover:text-sepia-200"
-                                                    )} />
-                                                </Link>
-                                            </NavigationMenuItem>
-                                        ))}
-                                    </NavigationMenuList>
-                                </NavigationMenu>
-                            )}
-                        </div>
-                    </div>
-                    {/* Right side */}
-                    <div className="flex items-center gap-3">
-                        <Button
-                            className="text-sm font-medium px-4 h-9 rounded-none shadow-sm"
-                            onClick={e => {
-                                e.preventDefault()
-                                router.push("/auth/login")
-                            }}
-                            size="sm"
-                            variant="sepia"
-                        >
-                            {signInText}
-
-                        </Button>
-                        <PanafricanButton
-                            dashArray="5 5"
-                            animated={true}
-                            animateOnHover={false}
-                            strokeWidth={1.5}
-                            borderRadius={0}
-                            animationDuration={2}
-                            className="bg-black hidden sm:block rounded-none hover:bg-black/80 text-sepia-100 hover:text-sepia-200"
-                            onClick={e => {
-                                e.preventDefault()
-                                router.push("/promoter")
-                            }}
-                            variant="ghost"
-                        > {ctaText}
-                        </PanafricanButton>
-
-                    </div>
-                </div>
-            </motion.header>
-        )
-    },
+const NavLink = ({
+    href,
+    label,
+    active = false,
+    scrolled = false,
+}: {
+    href: string
+    label: string
+    active?: boolean
+    scrolled?: boolean
+}) => (
+    <Link
+        href={href}
+        className={cn(
+            "relative py-1 flex items-center gap-1 text-sm font-semibold transition-colors",
+            getNavLinkClass(scrolled, active)
+        )}
+    >
+        {label}
+        {active && (
+            <motion.div
+                layoutId="nav-underline"
+                className="absolute -bottom-1 left-0 w-full h-0.5 bg-sepia"
+                transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+            />
+        )}
+    </Link>
 )
 
+export const Navbar: React.FC<NavbarProps> = ({
+    navigationLinks = defaultNavigationLinks,
+    signInText = "Sign In",
+    ctaText = "Become a Promoter",
+}) => {
+    const pathname = usePathname()
+    const [isOpen, setIsOpen] = useState(false)
+    const [scrolled, setScrolled] = useState(false)
+    const [visible, setVisible] = useState(true)
+
+    const lastScrollY = useRef(0)
+    const ticking = useRef(false)
+
+    useEffect(() => {
+        const handleScroll = () => {
+            if (ticking.current) return
+            ticking.current = true
+            requestAnimationFrame(() => {
+                const currentY = window.scrollY
+                const diff = currentY - lastScrollY.current
+                setScrolled(currentY > 10)
+                if (currentY < 60) {
+                    setVisible(true)
+                } else if (diff > 6) {
+                    setVisible(false)
+                    setIsOpen(false)
+                } else if (diff < -6) {
+                    setVisible(true)
+                }
+                lastScrollY.current = currentY
+                ticking.current = false
+            })
+        }
+        window.addEventListener('scroll', handleScroll, { passive: true })
+        return () => window.removeEventListener('scroll', handleScroll)
+    }, [])
+
+    const isLinkActive = (href: string) => {
+        if (href === '/#' || href === '/') return pathname === '/'
+        if (href.startsWith('/#')) return false // Hash links are not "active" based on pathname
+        return pathname === href
+    }
+
+    return (
+        <motion.div
+            animate={{ y: visible ? 0 : '-100%' }}
+            transition={{ duration: 0.35, ease: [0.25, 0.1, 0.25, 1] }}
+            className={cn(
+                "fixed top-0 left-0 w-full z-50 flex justify-center",
+                scrolled ? 'bg-white/95 backdrop-blur shadow-lg' : 'bg-black/95 backdrop-blur'
+            )}
+            style={{ pointerEvents: visible ? 'auto' : 'none' }}
+        >
+            <motion.header
+                transition={{ duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
+                className={cn(
+                    "h-20 px-4 md:px-6 lg:px-8 flex-1 max-w-7xl overflow-visible",
+                    scrolled ? 'border-b border-white/20' : ''
+                )}
+            >
+                <div className="h-full flex items-center justify-between">
+                    {/* Logo */}
+                    <Link href="/" className="flex items-center gap-1">
+                        <AfroTixLogo className="h-10 w-auto hidden sm:block" />
+                        <AfroTixLogo className="h-8 w-auto block sm:hidden" />
+                    </Link>
+
+                    {/* Desktop Nav */}
+                    <nav className="hidden lg:flex items-center gap-8">
+                        {navigationLinks.map((link) => (
+                            <NavLink
+                                key={link.href}
+                                href={link.href}
+                                label={link.label}
+                                active={isLinkActive(link.href)}
+                                scrolled={scrolled}
+                            />
+                        ))}
+                    </nav>
+
+                    {/* Actions */}
+                    <div className="flex items-center gap-4">
+                        <Link
+                            href="/auth/login"
+                            className="hidden sm:flex rounded-none px-6 py-2.5 font-bold text-sm items-center gap-2 shadow-sm transition-all duration-300 bg-sepia text-white hover:bg-sepia/90"
+                        >
+                            {signInText}
+                        </Link>
+                        <Link
+                            href="/promoter"
+                            className="hidden md:flex rounded-none border-2 px-6 py-2 font-bold text-sm items-center gap-2 transition-all duration-300 border-sepia text-sepia hover:bg-sepia hover:text-white"
+                        >
+                            {ctaText}
+                        </Link>
+                        <button
+                            type="button"
+                            onClick={() => setIsOpen(!isOpen)}
+                            className={cn(
+                                "lg:hidden p-2 rounded-lg transition-colors focus:outline-none",
+                                scrolled ? 'text-sepia hover:bg-sepia/10' : 'text-white hover:bg-white/10'
+                            )}
+                            aria-label="Toggle Menu"
+                        >
+                            {isOpen ? <X size={28} /> : <Menu size={28} />}
+                        </button>
+                    </div>
+                </div>
+
+                {/* Mobile Menu */}
+                <AnimatePresence>
+                    {isOpen && (
+                        <motion.div
+                            key="mobile-menu"
+                            initial={{ opacity: 0, scaleY: 0.95 }}
+                            animate={{ opacity: 1, scaleY: 1 }}
+                            exit={{ opacity: 0, scaleY: 0.95 }}
+                            transition={{ duration: 0.2, ease: 'easeOut' }}
+                            style={{ transformOrigin: 'top' }}
+                            className={cn(
+                                "lg:hidden absolute top-full left-0 w-full shadow-2xl",
+                                scrolled ? 'bg-white border-t border-gray-100' : 'bg-black border-t border-white/10'
+                            )}
+                        >
+                            <div className="flex flex-col p-8 gap-6">
+                                {navigationLinks.map((link) => {
+                                    const isActive = isLinkActive(link.href)
+                                    let linkClass = 'text-white hover:text-sepia'
+                                    if (isActive) {
+                                        linkClass = 'text-sepia'
+                                    } else if (scrolled) {
+                                        linkClass = 'text-gray-800 hover:text-sepia'
+                                    }
+                                    return (
+                                        <Link
+                                            key={link.href}
+                                            href={link.href}
+                                            onClick={() => setIsOpen(false)}
+                                            className={cn(
+                                                "text-xl font-bold tracking-tight transition-colors",
+                                                linkClass
+                                            )}
+                                        >
+                                            {link.label}
+                                        </Link>
+                                    )
+                                })}
+                                <div className="flex flex-col gap-3 pt-4 border-t border-gray-200">
+                                    <Link
+                                        href="/auth/login"
+                                        onClick={() => setIsOpen(false)}
+                                        className="w-full bg-sepia text-white px-6 py-4 rounded-none font-bold text-center flex items-center justify-center gap-2 shadow-lg hover:bg-sepia/90 transition-colors"
+                                    >
+                                        {signInText}
+                                    </Link>
+                                    <Link
+                                        href="/promoter"
+                                        onClick={() => setIsOpen(false)}
+                                        className="w-full border-2 border-sepia text-sepia px-6 py-4 rounded-none font-bold text-center flex items-center justify-center gap-2 hover:bg-sepia hover:text-white transition-colors"
+                                    >
+                                        {ctaText} <ArrowRight size={18} />
+                                    </Link>
+                                </div>
+                            </div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+            </motion.header>
+        </motion.div>
+    )
+}
+
 Navbar.displayName = "Navbar"
+
+export default Navbar

@@ -1,7 +1,7 @@
 "use client"
 
 import { motion, type MotionValue } from "motion/react"
-import { EventGalleryItem } from "./EventGalleryItem"
+import { EventCard } from "./EventGalleryItem"
 import type { EventItem } from "@/lib/const/landing"
 
 interface EventGalleryProps {
@@ -93,7 +93,7 @@ export function EventGallery({ items, x, scrollProgress, containerRef }: EventGa
                     }}
                 >
                     {items.map((item) => (
-                        <EventGalleryItem key={item.id} item={item} />
+                        <EventCard key={item.id} item={item} />
                     ))}
                 </motion.div>
             </div>

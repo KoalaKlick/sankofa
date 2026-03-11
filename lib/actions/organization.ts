@@ -332,7 +332,7 @@ export async function switchOrganization(
     organizationId: string
 ): Promise<ActionResult> {
     console.log("[switchOrganization] Switching to org:", organizationId);
-    
+
     const user = await getCurrentUser();
     if (!user) {
         console.log("[switchOrganization] Not authenticated");

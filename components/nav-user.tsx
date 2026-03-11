@@ -97,7 +97,7 @@ export function NavUser({
   const handleOrgSelect = async (org: Organization) => {
     console.log("[NavUser] handleOrgSelect called for:", org.name, org.id)
     console.log("[NavUser] Current activeOrganizationId:", activeOrganizationId)
-    
+
     if (org.id === activeOrganizationId) {
       console.log("[NavUser] Already active, skipping")
       return // Already active

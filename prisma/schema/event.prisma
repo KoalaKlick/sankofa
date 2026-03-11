@@ -1,0 +1,50 @@
+// Prisma Schema - Events
+// Event model for all event types (voting, ticketed, ads, hybrid)
+
+model Event {
+  id                   String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  organizationId       String      @map("organization_id") @db.Uuid
+  creatorId            String?     @map("creator_id") @db.Uuid
+  title                String
+  description          String?
+  slug                 String
+  type                 EventType
+  status               EventStatus @default(draft)
+  startDate            DateTime?   @map("start_date") @db.Timestamptz
+  endDate              DateTime?   @map("end_date") @db.Timestamptz
+  timezone             String      @default("Africa/Lagos")
+  isPublic             Boolean     @default(true) @map("is_public")
+  coverImage           String?     @map("cover_image")
+  bannerImage          String?     @map("banner_image")
+  venueName            String?     @map("venue_name")
+  venueAddress         String?     @map("venue_address")
+  venueCity            String?     @map("venue_city")
+  venueCountry         String      @default("Nigeria") @map("venue_country")
+  isVirtual            Boolean     @default(false) @map("is_virtual")
+  virtualLink          String?     @map("virtual_link")
+  maxAttendees         Int?        @map("max_attendees")
+  registrationDeadline DateTime?   @map("registration_deadline") @db.Timestamptz
+  createdAt            DateTime    @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt            DateTime    @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+  publishedAt          DateTime?   @map("published_at") @db.Timestamptz
+
+  // Relations
+  organization     Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  creator          Profile?         @relation("CreatedEvents", fields: [creatorId], references: [id], onDelete: SetNull)
+  votingCategories VotingCategory[]
+  votingOptions    VotingOption[]
+  votes            Vote[]
+  ticketTypes      TicketType[]
+  ticketOrders     TicketOrder[]
+  tickets          Ticket[]
+
+  @@unique([organizationId, slug])
+  @@index([organizationId], name: "idx_events_organization")
+  @@index([creatorId], name: "idx_events_creator")
+  @@index([status], name: "idx_events_status")
+  @@index([type], name: "idx_events_type")
+  @@index([slug], name: "idx_events_slug")
+  @@index([startDate], name: "idx_events_start_date")
+  @@index([isPublic], name: "idx_events_is_public")
+  @@map("events")
+}

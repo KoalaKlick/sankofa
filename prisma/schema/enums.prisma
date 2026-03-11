@@ -1,0 +1,138 @@
+// Prisma Schema - Enums
+// All enum definitions for the application
+
+enum OrganizationRole {
+  owner
+  admin
+  member
+}
+
+enum InvitationStatus {
+  pending
+  accepted
+  declined
+  expired
+}
+
+enum EventType {
+  voting
+  ticketed
+  advertisement
+  hybrid
+}
+
+enum EventStatus {
+  draft
+  published
+  ongoing
+  ended
+  cancelled
+}
+
+enum TicketStatus {
+  available
+  sold_out
+  hidden
+  expired
+}
+
+enum OrderStatus {
+  pending
+  paid
+  confirmed
+  cancelled
+  refunded
+}
+
+enum TicketCheckInStatus {
+  not_checked_in
+  checked_in
+  cancelled
+}
+
+enum PromoterStatus {
+  pending
+  active
+  suspended
+  inactive
+}
+
+enum ReferralStatus {
+  pending
+  verified
+  converted
+  expired
+  invalid
+}
+
+enum CommissionStatus {
+  pending
+  approved
+  paid
+  rejected
+  cancelled
+}
+
+enum CommissionType {
+  signup
+  ticket_purchase
+  vote_purchase
+  subscription
+  bonus
+}
+
+enum CurrencyCode {
+  NGN
+  USD
+  GHS
+  KES
+  ZAR
+  GBP
+  EUR
+}
+
+enum PaymentProvider {
+  paystack
+  flutterwave
+  stripe
+  bank_transfer
+  wallet
+  cash
+  free
+}
+
+enum TransactionType {
+  credit
+  debit
+}
+
+enum TransactionCategory {
+  ticket_purchase
+  vote_purchase
+  subscription
+  refund
+  commission_payout
+  wallet_topup
+  wallet_withdrawal
+  transfer
+  fee
+  bonus
+  adjustment
+}
+
+enum TransactionStatus {
+  pending
+  processing
+  completed
+  failed
+  cancelled
+  reversed
+}
+
+enum PayoutStatus {
+  pending
+  processing
+  completed
+  failed
+  cancelled
+}

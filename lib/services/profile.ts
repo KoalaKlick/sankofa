@@ -28,7 +28,7 @@ export async function getCurrentProfile(): Promise<Profile | null> {
     .single();
 
   if (error) {
-    logger.error('Error fetching profile:', error);
+    logger.error(error, 'Error fetching profile:');
     return null;
   }
 

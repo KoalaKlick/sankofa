@@ -61,7 +61,7 @@ export const getOrganizationById = cache(async (id: string): Promise<Organizatio
             where: { id },
         });
     } catch (error) {
-        logger.error("[DAL] Error fetching organization:", error);
+        logger.error(error, "[DAL] Error fetching organization:");
         return null;
     }
 });
@@ -75,7 +75,7 @@ export const getOrganizationBySlug = cache(async (slug: string): Promise<Organiz
             where: { slug },
         });
     } catch (error) {
-        logger.error("[DAL] Error fetching organization by slug:", error);
+        logger.error(error, "[DAL] Error fetching organization by slug:");
         return null;
     }
 });
@@ -94,7 +94,7 @@ export async function isSlugAvailable(slug: string, excludeOrgId?: string): Prom
         if (excludeOrgId && existing.id === excludeOrgId) return true;
         return false;
     } catch (error) {
-        logger.error("[DAL] Error checking slug availability:", error);
+        logger.error(error, "[DAL] Error checking slug availability:");
         return false;
     }
 }
@@ -125,7 +125,7 @@ export const getUserOrganizations = cache(
                 memberCount: m.organization._count.members,
             }));
         } catch (error) {
-            logger.error("[DAL] Error fetching user organizations:", error);
+            logger.error(error, "[DAL] Error fetching user organizations:");
             return [];
         }
     }
@@ -149,7 +149,7 @@ export const getUserRoleInOrganization = cache(
 
             return membership?.role ?? null;
         } catch (error) {
-            logger.error("[DAL] Error fetching user role:", error);
+            logger.error(error, "[DAL] Error fetching user role:");
             return null;
         }
     }
@@ -209,7 +209,7 @@ export async function createOrganization(data: OrganizationCreateInput): Promise
             return org;
         });
     } catch (error) {
-        logger.error("[DAL] Error creating organization:", error);
+        logger.error(error, "[DAL] Error creating organization:");
         return null;
     }
 }
@@ -227,7 +227,7 @@ export async function updateOrganization(
             data,
         });
     } catch (error) {
-        logger.error("[DAL] Error updating organization:", error);
+        logger.error(error, "[DAL] Error updating organization:");
         return null;
     }
 }
@@ -242,7 +242,7 @@ export async function deleteOrganization(id: string): Promise<boolean> {
         });
         return true;
     } catch (error) {
-        logger.error("[DAL] Error deleting organization:", error);
+        logger.error(error, "[DAL] Error deleting organization:");
         return false;
     }
 }
@@ -264,7 +264,7 @@ export async function addOrganizationMember(
             },
         });
     } catch (error) {
-        logger.error("[DAL] Error adding organization member:", error);
+        logger.error(error, "[DAL] Error adding organization member:");
         return null;
     }
 }
@@ -288,7 +288,7 @@ export async function updateMemberRole(
             data: { role },
         });
     } catch (error) {
-        logger.error("[DAL] Error updating member role:", error);
+        logger.error(error, "[DAL] Error updating member role:");
         return null;
     }
 }
@@ -311,7 +311,7 @@ export async function removeOrganizationMember(
         });
         return true;
     } catch (error) {
-        logger.error("[DAL] Error removing organization member:", error);
+        logger.error(error, "[DAL] Error removing organization member:");
         return false;
     }
 }
@@ -336,7 +336,7 @@ export async function updateOrganizationMemberRole(
         });
         return true;
     } catch (error) {
-        logger.error("[DAL] Error updating organization member role:", error);
+        logger.error(error, "[DAL] Error updating organization member role:");
         return false;
     }
 }
@@ -383,7 +383,7 @@ export async function getOrganizationMembers(
             totalPages: Math.ceil(total / limit),
         };
     } catch (error) {
-        logger.error("[DAL] Error fetching organization members:", error);
+        logger.error(error, "[DAL] Error fetching organization members:");
         return { members: [], total: 0, page: 1, totalPages: 0 };
     }
 }
@@ -414,7 +414,7 @@ export async function getPendingInvitationsForEmail(email: string): Promise<Invi
             },
         });
     } catch (error) {
-        logger.error("[DAL] Error fetching pending invitations:", error);
+        logger.error(error, "[DAL] Error fetching pending invitations:");
         return [];
     }
 }
@@ -431,7 +431,7 @@ export async function getInvitationById(id: string): Promise<OrganizationInvitat
             },
         });
     } catch (error) {
-        logger.error("[DAL] Error fetching invitation by ID:", error);
+        logger.error(error, "[DAL] Error fetching invitation by ID:");
         return null;
     }
 }
@@ -452,7 +452,7 @@ export async function updateInvitationStatus(
             },
         });
     } catch (error) {
-        logger.error("[DAL] Error updating invitation status:", error);
+        logger.error(error, "[DAL] Error updating invitation status:");
         return null;
     }
 }
@@ -488,7 +488,7 @@ export async function completeInvitationAcceptance(
         });
         return true;
     } catch (error) {
-        logger.error("[DAL] Error completing invitation acceptance:", error);
+        logger.error(error, "[DAL] Error completing invitation acceptance:");
         return false;
     }
 }
@@ -514,7 +514,7 @@ export const getOrganizationProfile = cache(async (slug: string) => {
             },
         });
     } catch (error) {
-        logger.error("[DAL] Error fetching organization profile:", error);
+        logger.error(error, "[DAL] Error fetching organization profile:");
         return null;
     }
 });
@@ -537,7 +537,7 @@ export async function createMembershipRequest(data: {
             },
         });
     } catch (error) {
-        logger.error("[DAL] Error creating membership request:", error);
+        logger.error(error, "[DAL] Error creating membership request:");
         return null;
     }
 }
@@ -554,7 +554,7 @@ export async function getMembershipRequest(organizationId: string, userId: strin
             },
         });
     } catch (error) {
-        logger.error("[DAL] Error fetching membership request:", error);
+        logger.error(error, "[DAL] Error fetching membership request:");
         return null;
     }
 }
@@ -582,7 +582,7 @@ export async function getMembershipRequests(organizationId: string): Promise<Mem
             orderBy: { createdAt: "desc" },
         });
     } catch (error) {
-        logger.error("[DAL] Error fetching membership requests:", error);
+        logger.error(error, "[DAL] Error fetching membership requests:");
         return [];
     }
 }
@@ -602,7 +602,7 @@ export async function updateMembershipRequestStatus(
             },
         });
     } catch (error) {
-        logger.error("[DAL] Error updating membership request status:", error);
+        logger.error(error, "[DAL] Error updating membership request status:");
         return null;
     }
 }
@@ -628,7 +628,7 @@ export async function createOrganizationInvitation(data: {
             },
         });
     } catch (error) {
-        logger.error("[DAL] Error creating invitation:", error);
+        logger.error(error, "[DAL] Error creating invitation:");
         return null;
     }
 }

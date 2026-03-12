@@ -23,7 +23,6 @@ const createPrismaClient = () => {
     ],
   });
 
-  // @ts-expect-error - Prisma types
   client.$on("query", (e: any) => {
     logger.debug(
       { query: e.query, params: e.params, duration: e.duration },
@@ -31,17 +30,14 @@ const createPrismaClient = () => {
     );
   });
 
-  // @ts-expect-error - Prisma types
   client.$on("info", (e: any) => {
     logger.info({ message: e.message }, "Prisma Info");
   });
 
-  // @ts-expect-error - Prisma types
   client.$on("warn", (e: any) => {
     logger.warn({ message: e.message }, "Prisma Warn");
   });
 
-  // @ts-expect-error - Prisma types
   client.$on("error", (e: any) => {
     logger.error({ message: e.message }, "Prisma Error");
   });

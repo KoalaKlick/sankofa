@@ -60,6 +60,7 @@ import {
     changeEventStatus,
 } from "@/lib/actions/event";
 import { convertToWebP } from "@/lib/image-utils";
+import { getEventImageUrl } from "@/lib/image-url-utils";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { VotingManager } from "@/components/event";
@@ -188,6 +189,10 @@ export function EventDetailClient({ event, organizationSlug, userRole, votingCat
         ? `/${organizationSlug}/event/${event.slug}`
         : null;
 
+    // Generate display URLs from paths
+    const coverDisplayUrl = getEventImageUrl(formData.coverImage);
+    const bannerDisplayUrl = getEventImageUrl(formData.bannerImage);
+
     // Save a single field
     async function saveField(fieldName: string, value: unknown) {
         const formDataObj = new FormData();
@@ -239,14 +244,20 @@ export function EventDetailClient({ event, organizationSlug, userRole, votingCat
             const uploadFormData = new FormData();
             uploadFormData.set("file", optimizedFile);
 
+            // Pass old image path for deletion
+            const oldImagePath = type === "cover" ? formData.coverImage : formData.bannerImage;
+            if (oldImagePath) {
+                uploadFormData.set("oldImagePath", oldImagePath);
+            }
+
             const result = await uploadEventImage(uploadFormData, type);
             if (result.success) {
                 const fieldName = type === "cover" ? "coverImage" : "bannerImage";
-                setFormData(prev => ({ ...prev, [fieldName]: result.data.url }));
+                setFormData(prev => ({ ...prev, [fieldName]: result.data.path }));
 
                 // Save to database directly
                 const saveFormData = new FormData();
-                saveFormData.set(fieldName, result.data.url);
+                saveFormData.set(fieldName, result.data.path);
                 const saveResult = await updateExistingEvent(event.id, saveFormData);
 
                 if (saveResult.success) {
@@ -309,9 +320,9 @@ export function EventDetailClient({ event, organizationSlug, userRole, votingCat
             <div className="bg-card border rounded-xl overflow-hidden">
                 {/* Banner */}
                 <div className="relative h-32 sm:h-48 bg-linear-to-r from-primary/20 to-primary/5">
-                    {formData.bannerImage && (
+                    {formData.bannerImage && bannerDisplayUrl && (
                         <Image
-                            src={formData.bannerImage}
+                            src={bannerDisplayUrl}
                             alt="Banner"
                             fill
                             className="object-cover"
@@ -350,9 +361,9 @@ export function EventDetailClient({ event, organizationSlug, userRole, votingCat
                         {/* Cover Image */}
                         <div className="relative shrink-0">
                             <div className="size-24 sm:size-32 overflow-clip p-4  rounded-xl border-4 border-background bg-muted shadow-lg">
-                                {formData.coverImage ? (
+                                {formData.coverImage && coverDisplayUrl ? (
                                     <Image
-                                        src={formData.coverImage}
+                                        src={coverDisplayUrl}
                                         alt={event.title}
                                         fill
                                         className="object-cover rounded-xl"

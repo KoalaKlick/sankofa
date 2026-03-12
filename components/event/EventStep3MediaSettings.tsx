@@ -12,6 +12,7 @@ import { Label } from "@/components/ui/label";
 import { ArrowLeft, Loader2, Image as ImageIcon, Upload, X, Eye, EyeOff, Users, CheckCircle } from "lucide-react";
 import { uploadEventImage } from "@/lib/actions/event";
 import { convertToWebP } from "@/lib/image-utils";
+import { getEventImageUrl } from "@/lib/image-url-utils";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
 
@@ -46,6 +47,10 @@ export function EventStep3MediaSettings({ initialData, onSuccess, onBack, onSkip
     const coverInputRef = useRef<HTMLInputElement>(null);
     const bannerInputRef = useRef<HTMLInputElement>(null);
 
+    // Generate display URLs from paths
+    const coverDisplayUrl = getEventImageUrl(coverImage);
+    const bannerDisplayUrl = getEventImageUrl(bannerImage);
+
     async function handleImageUpload(file: File, type: "cover" | "banner") {
         setIsUploading(true);
         setErrors({});
@@ -62,12 +67,18 @@ export function EventStep3MediaSettings({ initialData, onSuccess, onBack, onSkip
             const formData = new FormData();
             formData.set("file", optimizedFile);
 
+            // Pass old image path for deletion
+            const oldImagePath = type === "cover" ? coverImage : bannerImage;
+            if (oldImagePath) {
+                formData.set("oldImagePath", oldImagePath);
+            }
+
             const result = await uploadEventImage(formData, type);
             if (result.success) {
                 if (type === "cover") {
-                    setCoverImage(result.data.url);
+                    setCoverImage(result.data.path);
                 } else {
-                    setBannerImage(result.data.url);
+                    setBannerImage(result.data.path);
                 }
             } else {
                 setErrors({ [type]: [result.error] });
@@ -117,10 +128,10 @@ export function EventStep3MediaSettings({ initialData, onSuccess, onBack, onSkip
                     className="hidden"
                 />
 
-                {coverImage ? (
+                {coverImage && coverDisplayUrl ? (
                     <div className="relative rounded-xl overflow-hidden border aspect-video">
                         <Image
-                            src={coverImage}
+                            src={coverDisplayUrl}
                             alt="Cover"
                             fill
                             className="object-cover"
@@ -175,10 +186,10 @@ export function EventStep3MediaSettings({ initialData, onSuccess, onBack, onSkip
                     className="hidden"
                 />
 
-                {bannerImage ? (
+                {bannerImage && bannerDisplayUrl ? (
                     <div className="relative rounded-xl overflow-hidden border h-32">
                         <Image
-                            src={bannerImage}
+                            src={bannerDisplayUrl}
                             alt="Banner"
                             fill
                             className="object-cover"

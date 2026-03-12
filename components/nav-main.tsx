@@ -45,7 +45,7 @@ export function NavMain({
   }
 
   // Check if any sub-item is active
-  const hasActiveSubItem = (subItems?: { url: string }[]) => {
+  const hasActiveSubItem = (subItems?: readonly { readonly url: string }[]) => {
     return subItems?.some(subItem => isUrlActive(subItem.url)) ?? false
   }
 

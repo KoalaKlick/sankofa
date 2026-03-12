@@ -113,6 +113,7 @@ import {
     reorderCategories,
 } from "@/lib/actions/voting";
 import { convertToWebP } from "@/lib/image-utils";
+import { getEventImageUrl } from "@/lib/image-url-utils";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { TemplateEditor, type TemplateConfig } from "@/components/shared/template-editor";
@@ -297,6 +298,10 @@ export function VotingManager({ eventId, categories: initialCategories, canEdit 
     // Template editor state
     const [templateEditorOpen, setTemplateEditorOpen] = useState(false);
     const [uploadedPhotoForTemplate, setUploadedPhotoForTemplate] = useState<string | null>(null);
+
+    // Generate display URLs from paths
+    const optionFormImageDisplayUrl = getEventImageUrl(optionForm.imageUrl);
+    const optionFormFinalImageDisplayUrl = getEventImageUrl(optionForm.finalImage);
 
     // DnD sensors for category reordering
     const sensors = useSensors(
@@ -583,10 +588,15 @@ export function VotingManager({ eventId, categories: initialCategories, canEdit 
             const formData = new FormData();
             formData.set("file", optimizedFile);
 
+            // Pass old image path for deletion
+            if (optionForm.imageUrl) {
+                formData.set("oldImagePath", optionForm.imageUrl);
+            }
+
             const result = await uploadNomineeImage(formData);
             if (result.success) {
-                // Store original image in imageUrl (template is applied separately)
-                setOptionForm(prev => ({ ...prev, imageUrl: result.data.url }));
+                // Store original image path in imageUrl (template is applied separately)
+                setOptionForm(prev => ({ ...prev, imageUrl: result.data.path }));
                 toast.success("Image uploaded");
             } else {
                 toast.error(result.error);
@@ -611,11 +621,16 @@ export function VotingManager({ eventId, categories: initialCategories, canEdit 
             const formData = new FormData();
             formData.set("file", file);
 
+            // Pass old final image path for deletion
+            if (optionForm.finalImage) {
+                formData.set("oldImagePath", optionForm.finalImage);
+            }
+
             const result = await uploadNomineeImage(formData);
             if (result.success) {
                 setOptionForm(prev => ({
                     ...prev,
-                    finalImage: result.data.url, // Store template image separately from original
+                    finalImage: result.data.path, // Store template image path separately from original
                 }));
                 toast.success("Template applied successfully");
                 setTemplateEditorOpen(false);
@@ -636,11 +651,11 @@ export function VotingManager({ eventId, categories: initialCategories, canEdit 
 
     // Open template editor using the main imageUrl
     function handleApplyTemplateWithMainPhoto() {
-        if (!optionForm.imageUrl) {
+        if (!optionForm.imageUrl || !optionFormImageDisplayUrl) {
             toast.error("No nominee photo available. Upload a photo or use 'Upload for Template'.");
             return;
         }
-        setUploadedPhotoForTemplate(optionForm.imageUrl);
+        setUploadedPhotoForTemplate(optionFormImageDisplayUrl);
         setTemplateEditorOpen(true);
     }
 
@@ -1522,9 +1537,9 @@ export function VotingManager({ eventId, categories: initialCategories, canEdit 
                             <Label>Original Photo</Label>
                             <div className="flex items-start gap-4">
                                 <div className="size-24 rounded-lg border bg-muted overflow-hidden relative shrink-0">
-                                    {optionForm.imageUrl ? (
+                                    {optionForm.imageUrl && optionFormImageDisplayUrl ? (
                                         <Image
-                                            src={optionForm.imageUrl}
+                                            src={optionFormImageDisplayUrl}
                                             alt="Nominee"
                                             fill
                                             className="object-cover"
@@ -1585,9 +1600,9 @@ export function VotingManager({ eventId, categories: initialCategories, canEdit 
                                 </Label>
                                 <div className="flex items-start gap-4">
                                     <div className="size-24 rounded-lg border bg-muted overflow-hidden relative shrink-0">
-                                        {optionForm.finalImage ? (
+                                        {optionForm.finalImage && optionFormFinalImageDisplayUrl ? (
                                             <Image
-                                                src={optionForm.finalImage}
+                                                src={optionFormFinalImageDisplayUrl}
                                                 alt="Template preview"
                                                 fill
                                                 className="object-cover"

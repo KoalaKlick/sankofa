@@ -13,6 +13,14 @@ const SIDEBAR_WIDTH_MOBILE = "18rem"
 const SIDEBAR_WIDTH_ICON = "3rem"
 const SIDEBAR_KEYBOARD_SHORTCUT = "b"
 
+/**
+ * Set a cookie value (wrapper to avoid direct document.cookie assignment)
+ */
+function setCookie(name: string, value: string, maxAge: number) {
+    // biome-ignore lint/suspicious/noDocumentCookie: Standard cookie setting for sidebar state persistence
+    globalThis.document.cookie = `${name}=${value}; path=/; max-age=${maxAge}`
+}
+
 type SidebarContextProps = {
     state: "expanded" | "collapsed"
     open: boolean
@@ -64,7 +72,7 @@ function SidebarProvider({
             }
 
             // This sets the cookie to keep the sidebar state.
-            document.cookie = `${SIDEBAR_COOKIE_NAME}=${openState}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}`
+            setCookie(SIDEBAR_COOKIE_NAME, String(openState), SIDEBAR_COOKIE_MAX_AGE)
         },
         [setOpenProp, open]
     )
@@ -72,7 +80,7 @@ function SidebarProvider({
     // Helper to toggle the sidebar.
     const toggleSidebar = React.useCallback(() => {
         return isMobile ? setOpenMobile((open) => !open) : setOpen((open) => !open)
-    }, [isMobile, setOpen, setOpenMobile])
+    }, [isMobile, setOpen])
 
     // Adds a keyboard shortcut to toggle the sidebar.
     React.useEffect(() => {
@@ -86,8 +94,8 @@ function SidebarProvider({
             }
         }
 
-        window.addEventListener("keydown", handleKeyDown)
-        return () => window.removeEventListener("keydown", handleKeyDown)
+        globalThis.addEventListener("keydown", handleKeyDown)
+        return () => globalThis.removeEventListener("keydown", handleKeyDown)
     }, [toggleSidebar])
 
     // We add a state so that we can do data-state="expanded" or "collapsed".
@@ -104,7 +112,7 @@ function SidebarProvider({
             setOpenMobile,
             toggleSidebar,
         }),
-        [state, open, setOpen, isMobile, openMobile, setOpenMobile, toggleSidebar]
+        [state, open, setOpen, isMobile, openMobile, toggleSidebar]
     )
 
     return (

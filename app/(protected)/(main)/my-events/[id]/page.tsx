@@ -3,6 +3,7 @@ import { createClient } from "@/utils/supabase/server";
 import { getUserRoleInOrganization, getOrganizationById } from "@/lib/dal/organization";
 import { getEventById } from "@/lib/dal/event";
 import { getVotingCategories } from "@/lib/dal/voting";
+import { normalizeFieldType } from "@/lib/types/voting";
 import { EventDetailClient } from "./EventDetailClient";
 import { PageHeader } from "@/components/shared/page-header";
 
@@ -79,6 +80,10 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
                     userRole={role}
                     votingCategories={votingCategories.map(cat => ({
                         ...cat,
+                        customFields: cat.customFields?.map(field => ({
+                            ...field,
+                            fieldType: normalizeFieldType(field.fieldType),
+                        })),
                         votingOptions: cat.votingOptions.map(opt => ({
                             ...opt,
                             votesCount: Number(opt.votesCount),

@@ -17,6 +17,14 @@ export const FIELD_TYPES = [
 
 export type FieldType = (typeof FIELD_TYPES)[number]["value"];
 
+const FIELD_TYPE_VALUES = new Set<FieldType>(FIELD_TYPES.map((field) => field.value));
+
+export function normalizeFieldType(fieldType: string): FieldType {
+    return FIELD_TYPE_VALUES.has(fieldType as FieldType)
+        ? (fieldType as FieldType)
+        : "text";
+}
+
 export interface CustomField {
     id: string;
     fieldName: string;

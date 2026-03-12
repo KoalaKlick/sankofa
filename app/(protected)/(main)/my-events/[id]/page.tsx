@@ -1,6 +1,5 @@
 import { redirect, notFound } from "next/navigation";
 import { createClient } from "@/utils/supabase/server";
-import { getEffectiveOrganizationId } from "@/lib/organization-utils";
 import { getUserRoleInOrganization, getOrganizationById } from "@/lib/dal/organization";
 import { getEventById } from "@/lib/dal/event";
 import { getVotingCategories } from "@/lib/dal/voting";
@@ -8,7 +7,7 @@ import { EventDetailClient } from "./EventDetailClient";
 import { PageHeader } from "@/components/shared/page-header";
 
 interface EventDetailPageProps {
-    params: Promise<{ id: string }>;
+    readonly params: Promise<{ id: string }>;
 }
 
 export default async function EventDetailPage({ params }: EventDetailPageProps) {
@@ -38,7 +37,7 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
 
     // Get voting categories for voting/hybrid events
     const votingCategories = (event.type === "voting" || event.type === "hybrid")
-        ? await getVotingCategories(event.id)
+        ? await getVotingCategories(event.id, true)
         : [];
 
     return (

@@ -9,6 +9,7 @@ import "server-only";
 import { prisma } from "@/lib/prisma";
 import { cache } from "react";
 import type { Event, EventType, EventStatus } from "@/lib/generated/prisma";
+import { normalizeEventStatus } from "@/lib/event-status";
 
 // Types for DAL operations
 export type EventCreateInput = {
@@ -138,7 +139,7 @@ export const getUpcomingEvents = cache(async (
         return await prisma.event.findMany({
             where: {
                 organizationId,
-                status: { in: ["published", "ongoing"] },
+                status: { notIn: ["draft", "cancelled"] },
                 startDate: { gte: new Date() },
             },
             orderBy: { startDate: "asc" },
@@ -165,7 +166,7 @@ export const getPublicEvents = cache(async (options?: {
         return await prisma.event.findMany({
             where: {
                 isPublic: true,
-                status: { in: ["published", "ongoing"] },
+                status: { notIn: ["draft", "cancelled"] },
                 ...(type && { type }),
                 ...(query && {
                     title: {
@@ -293,10 +294,11 @@ export async function updateEvent(id: string, data: EventUpdateInput): Promise<E
  */
 export async function updateEventStatus(id: string, status: EventStatus): Promise<Event | null> {
     try {
-        const updateData: { status: EventStatus; publishedAt?: Date } = { status };
+        const normalizedStatus = normalizeEventStatus(status);
+        const updateData: { status: EventStatus; publishedAt?: Date } = { status: normalizedStatus };
 
         // If publishing, set publishedAt
-        if (status === "published") {
+        if (normalizedStatus === "published") {
             updateData.publishedAt = new Date();
         }
 
@@ -355,16 +357,25 @@ export const getOrganizationEventStats = cache(async (organizationId: string) =>
         ] = await Promise.all([
             // Basic counts
             prisma.event.count({ where: { organizationId } }),
-            prisma.event.count({ where: { organizationId, status: "published" } }),
+            prisma.event.count({ where: { organizationId, status: { notIn: ["draft", "cancelled"] } } }),
             prisma.event.count({ where: { organizationId, status: "draft" } }),
-            prisma.event.count({ where: { organizationId, status: "ongoing" } }),
-            prisma.event.count({ where: { organizationId, status: "ended" } }),
+            prisma.event.count({ where: {
+                organizationId,
+                status: { notIn: ["draft", "cancelled"] },
+                startDate: { lte: now },
+                OR: [{ endDate: null }, { endDate: { gte: now } }],
+            } }),
+            prisma.event.count({ where: {
+                organizationId,
+                status: { notIn: ["draft", "cancelled"] },
+                endDate: { lt: now },
+            } }),
             prisma.event.count({ where: { organizationId, status: "cancelled" } }),
             // Upcoming: published events with future start date
             prisma.event.count({
                 where: {
                     organizationId,
-                    status: "published",
+                    status: { notIn: ["draft", "cancelled"] },
                     startDate: { gt: now },
                 },
             }),
@@ -405,7 +416,7 @@ export const getOrganizationEventStats = cache(async (organizationId: string) =>
             prisma.event.findFirst({
                 where: {
                     organizationId,
-                    status: "published",
+                    status: { notIn: ["draft", "cancelled"] },
                     startDate: { gt: now },
                 },
                 orderBy: { startDate: "asc" },
@@ -414,7 +425,11 @@ export const getOrganizationEventStats = cache(async (organizationId: string) =>
 
             // Most recent ended event
             prisma.event.findFirst({
-                where: { organizationId, status: "ended" },
+                where: {
+                    organizationId,
+                    status: { notIn: ["draft", "cancelled"] },
+                    endDate: { lt: now },
+                },
                 orderBy: { endDate: "desc" },
                 select: { id: true, title: true, endDate: true },
             }),
@@ -427,6 +442,22 @@ export const getOrganizationEventStats = cache(async (organizationId: string) =>
                 checkInStatus: "checked_in",
             },
         });
+
+        const upcomingEventHighlight = nextUpcoming?.startDate
+            ? {
+                id: nextUpcoming.id,
+                title: nextUpcoming.title,
+                startDate: nextUpcoming.startDate,
+            }
+            : undefined;
+
+        const recentEventHighlight = recentEnded?.endDate
+            ? {
+                id: recentEnded.id,
+                title: recentEnded.title,
+                endDate: recentEnded.endDate,
+            }
+            : undefined;
 
         const stats = {
             // Basic counts
@@ -461,20 +492,8 @@ export const getOrganizationEventStats = cache(async (organizationId: string) =>
                         attendees: mostAttended._count.tickets,
                     }
                     : undefined,
-            upcomingEvent: nextUpcoming
-                ? {
-                    id: nextUpcoming.id,
-                    title: nextUpcoming.title,
-                    startDate: nextUpcoming.startDate!,
-                }
-                : undefined,
-            recentEvent: recentEnded
-                ? {
-                    id: recentEnded.id,
-                    title: recentEnded.title,
-                    endDate: recentEnded.endDate!,
-                }
-                : undefined,
+            upcomingEvent: upcomingEventHighlight,
+            recentEvent: recentEventHighlight,
         };
 
         logger.info({ organizationId, total, published, draft, ongoing }, "[DAL] Event stats");

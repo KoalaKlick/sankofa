@@ -25,6 +25,7 @@ import {
     getEventById,
 } from "@/lib/dal/event";
 import { getUserRoleInOrganization } from "@/lib/dal/organization";
+import { normalizeEventStatus } from "@/lib/event-status";
 import { getEffectiveOrganizationId } from "@/lib/organization-utils";
 import type { EventType, EventStatus } from "@/lib/generated/prisma";
 import {
@@ -433,7 +434,7 @@ export async function changeEventStatus(
     }
 
     // Validate status
-    const validStatuses = ["draft", "published", "ongoing", "ended", "cancelled"];
+    const validStatuses = ["draft", "published"];
     if (!validStatuses.includes(status)) {
         return { success: false, error: "Invalid status" };
     }
@@ -450,7 +451,7 @@ export async function changeEventStatus(
     }
 
     try {
-        const updated = await updateEventStatus(eventId, status as EventStatus);
+        const updated = await updateEventStatus(eventId, normalizeEventStatus(status));
         if (!updated) {
             return { success: false, error: "Failed to change event status" };
         }

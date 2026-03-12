@@ -16,8 +16,7 @@ import type {
     OrganizationInvitation,
     InvitationStatus,
     MembershipRequest,
-    MembershipRequestStatus,
-    Event
+    MembershipRequestStatus
 } from "@/lib/generated/prisma";
 
 // Invitation with organization for display
@@ -552,17 +551,31 @@ export async function completeInvitationAcceptance(
 }
 
 /**
- * Get organization profile with public events
+ * Get organization profile with viewer-visible published events.
+ * Public visitors only see public events; organization members also see private published events.
  */
-export const getOrganizationProfile = cache(async (slug: string) => {
+export const getOrganizationProfile = cache(async (slug: string, viewerUserId?: string) => {
     try {
         return await prisma.organization.findUnique({
             where: { slug },
             include: {
                 events: {
                     where: {
-                        status: "published",
-                        isPublic: true,
+                        status: { notIn: ["draft", "cancelled"] },
+                        ...(viewerUserId
+                            ? {
+                                OR: [
+                                    { isPublic: true },
+                                    {
+                                        organization: {
+                                            members: {
+                                                some: { userId: viewerUserId },
+                                            },
+                                        },
+                                    },
+                                ],
+                            }
+                            : { isPublic: true }),
                     },
                     orderBy: { startDate: "asc" },
                 },

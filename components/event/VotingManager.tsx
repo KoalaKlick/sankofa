@@ -89,9 +89,6 @@ import {
     Hash,
     Clock,
     Globe,
-    CheckCircle2,
-    XCircle,
-    AlertCircle,
     Settings,
     FileText,
     Layers,
@@ -117,71 +114,17 @@ import { getEventImageUrl } from "@/lib/image-url-utils";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { TemplateEditor, type TemplateConfig } from "@/components/shared/template-editor";
-
-// Field type options for custom fields
-const FIELD_TYPES = [
-    { value: "text", label: "Text" },
-    { value: "textarea", label: "Long Text" },
-    { value: "number", label: "Number" },
-    { value: "email", label: "Email" },
-    { value: "url", label: "URL" },
-    { value: "date", label: "Date" },
-    { value: "file", label: "File/Attachment" },
-    { value: "select", label: "Dropdown" },
-] as const;
-
-type FieldType = typeof FIELD_TYPES[number]["value"];
-
-interface CustomField {
-    id: string;
-    fieldName: string;
-    fieldType: FieldType;
-    fieldLabel: string;
-    placeholder: string | null;
-    isRequired: boolean;
-    options: string | null;
-    orderIdx: number;
-}
-
-interface FieldValue {
-    fieldId: string;
-    value: string;
-}
-
-type VotingOptionStatus = "pending" | "approved" | "rejected";
-
-interface VotingOption {
-    id: string;
-    optionText: string;
-    nomineeCode: string | null;
-    email: string | null;
-    description: string | null;
-    imageUrl: string | null;
-    finalImage: string | null;
-    status: VotingOptionStatus;
-    isPublicNomination: boolean;
-    nominatedByName: string | null;
-    votesCount: bigint;
-    orderIdx: number;
-    fieldValues?: FieldValue[];
-}
-
-interface VotingCategory {
-    id: string;
-    name: string;
-    description: string | null;
-    maxVotesPerUser: number;
-    allowMultiple: boolean;
-    templateImage: string | null;
-    templateConfig: unknown;
-    showFinalImage: boolean;
-    allowPublicNomination: boolean;
-    nominationDeadline: string | Date | null;
-    requireApproval: boolean;
-    orderIdx: number;
-    votingOptions: VotingOption[];
-    customFields?: CustomField[];
-}
+import { NomineeCard } from "./NomineeCard";
+import {
+    FIELD_TYPES,
+    type FieldType,
+    type CustomField,
+    type FieldValue,
+    type VotingOptionStatus,
+    type VotingOption,
+    type VotingCategory,
+    getInputType,
+} from "@/lib/types/voting";
 
 interface VotingManagerProps {
     readonly eventId: string;
@@ -320,22 +263,21 @@ export function VotingManager({ eventId, categories: initialCategories, canEdit 
         const { active, over } = event;
 
         if (over && active.id !== over.id) {
-            setCategories((items) => {
-                const oldIndex = items.findIndex((item) => item.id === active.id);
-                const newIndex = items.findIndex((item) => item.id === over.id);
-                const newItems = arrayMove(items, oldIndex, newIndex);
+            const oldIndex = categories.findIndex((item) => item.id === active.id);
+            const newIndex = categories.findIndex((item) => item.id === over.id);
+            const newItems = arrayMove(categories, oldIndex, newIndex);
 
-                // Persist the new order
-                startTransition(async () => {
-                    const result = await reorderCategories(eventId, newItems.map((c) => c.id));
-                    if (!result.success) {
-                        toast.error("Failed to save category order");
-                        // Revert on error
-                        setCategories(items);
-                    }
-                });
+            // Optimistically update UI
+            setCategories(newItems);
 
-                return newItems;
+            // Persist the new order
+            startTransition(async () => {
+                const result = await reorderCategories(eventId, newItems.map((c) => c.id));
+                if (!result.success) {
+                    toast.error("Failed to save category order");
+                    // Revert on error
+                    setCategories(categories);
+                }
             });
         }
     }
@@ -946,29 +888,6 @@ export function VotingManager({ eventId, categories: initialCategories, canEdit 
         });
     }
 
-    // Get status badge color
-    function getStatusBadge(status: VotingOptionStatus) {
-        switch (status) {
-            case "approved":
-                return <Badge variant="default" className="bg-green-500"><CheckCircle2 className="size-3 mr-1" />Approved</Badge>;
-            case "pending":
-                return <Badge variant="secondary"><AlertCircle className="size-3 mr-1" />Pending</Badge>;
-            case "rejected":
-                return <Badge variant="destructive"><XCircle className="size-3 mr-1" />Rejected</Badge>;
-        }
-    }
-
-    // Get input type from field type
-    function getInputType(fieldType: FieldType): string {
-        switch (fieldType) {
-            case "number": return "number";
-            case "email": return "email";
-            case "url": return "url";
-            case "date": return "date";
-            default: return "text";
-        }
-    }
-
     // Get current category for option dialog
     const currentCategory = optionCategoryId ? categories.find(c => c.id === optionCategoryId) : null;
 
@@ -1382,128 +1301,18 @@ export function VotingManager({ eventId, categories: initialCategories, canEdit 
                                                         // Use finalImage if showFinalImage is enabled and it exists, otherwise fall back to imageUrl
                                                         const displayImage = (category.showFinalImage && option.finalImage) || option.imageUrl;
                                                         return (
-                                                            <Card
+                                                            <NomineeCard
                                                                 key={option.id}
-                                                                className={cn(
-                                                                    "overflow-hidden group",
-                                                                    option.status === "pending" && "ring-2 ring-yellow-500/50",
-                                                                    option.status === "rejected" && "opacity-50"
-                                                                )}
-                                                            >
-                                                                <div className="aspect-square relative bg-muted">
-                                                                    {displayImage ? (
-                                                                        <Image
-                                                                            src={displayImage}
-                                                                            alt={option.optionText}
-                                                                            fill
-                                                                            className="object-cover"
-                                                                            unoptimized
-                                                                        />
-                                                                    ) : (
-                                                                        <div className="w-full h-full flex items-center justify-center">
-                                                                            <Users className="size-8 text-muted-foreground" />
-                                                                        </div>
-                                                                    )}
-                                                                    {/* Status Badge */}
-                                                                    {option.status !== "approved" && (
-                                                                        <div className="absolute top-2 left-2">
-                                                                            {getStatusBadge(option.status)}
-                                                                        </div>
-                                                                    )}
-                                                                    {/* Public nomination indicator */}
-                                                                    {option.isPublicNomination && (
-                                                                        <div className="absolute top-2 right-2">
-                                                                            <Badge variant="outline" className="bg-background/80 text-xs">
-                                                                                <Globe className="size-3" />
-                                                                            </Badge>
-                                                                        </div>
-                                                                    )}
-                                                                    {canEdit && (
-                                                                        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                                                                            {option.status === "pending" ? (
-                                                                                <>
-                                                                                    <Button
-                                                                                        size="icon"
-                                                                                        variant="secondary"
-                                                                                        className="bg-green-500 hover:bg-green-600"
-                                                                                        onClick={() => handleApproveNomination(option.id)}
-                                                                                        disabled={isPending}
-                                                                                    >
-                                                                                        <CheckCircle2 className="size-4" />
-                                                                                    </Button>
-                                                                                    <Button
-                                                                                        size="icon"
-                                                                                        variant="destructive"
-                                                                                        onClick={() => handleRejectNomination(option.id)}
-                                                                                        disabled={isPending}
-                                                                                    >
-                                                                                        <XCircle className="size-4" />
-                                                                                    </Button>
-                                                                                </>
-                                                                            ) : (
-                                                                                <>
-                                                                                    <Button
-                                                                                        size="icon"
-                                                                                        variant="secondary"
-                                                                                        onClick={() => openEditOption(option, category.id)}
-                                                                                    >
-                                                                                        <Pencil className="size-4" />
-                                                                                    </Button>
-                                                                                    <AlertDialog>
-                                                                                        <AlertDialogTrigger asChild>
-                                                                                            <Button size="icon" variant="destructive">
-                                                                                                <Trash2 className="size-4" />
-                                                                                            </Button>
-                                                                                        </AlertDialogTrigger>
-                                                                                        <AlertDialogContent>
-                                                                                            <AlertDialogHeader>
-                                                                                                <AlertDialogTitle>Delete Nominee?</AlertDialogTitle>
-                                                                                                <AlertDialogDescription>
-                                                                                                    This will remove {option.optionText} from this category.
-                                                                                                </AlertDialogDescription>
-                                                                                            </AlertDialogHeader>
-                                                                                            <AlertDialogFooter>
-                                                                                                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                                                                                <AlertDialogAction
-                                                                                                    onClick={() => handleDeleteOption(option.id)}
-                                                                                                    className="bg-destructive text-destructive-foreground"
-                                                                                                >
-                                                                                                    Delete
-                                                                                                </AlertDialogAction>
-                                                                                            </AlertDialogFooter>
-                                                                                        </AlertDialogContent>
-                                                                                    </AlertDialog>
-                                                                                </>
-                                                                            )}
-                                                                        </div>
-                                                                    )}
-                                                                </div>
-                                                                <CardContent className="p-3">
-                                                                    <p className="font-medium text-sm truncate">
-                                                                        {option.optionText}
-                                                                    </p>
-                                                                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                                                                        {option.nomineeCode && (
-                                                                            <span className="flex items-center gap-1">
-                                                                                <Hash className="size-3" />
-                                                                                {option.nomineeCode}
-                                                                            </span>
-                                                                        )}
-                                                                        <span>{Number(option.votesCount)} votes</span>
-                                                                    </div>
-                                                                    {option.email && (
-                                                                        <p className="text-xs text-muted-foreground truncate flex items-center gap-1 mt-1">
-                                                                            <Mail className="size-3" />
-                                                                            {option.email}
-                                                                        </p>
-                                                                    )}
-                                                                    {option.isPublicNomination && option.nominatedByName && (
-                                                                        <p className="text-xs text-muted-foreground truncate mt-1">
-                                                                            Nominated by: {option.nominatedByName}
-                                                                        </p>
-                                                                    )}
-                                                                </CardContent>
-                                                            </Card>
+                                                                option={option}
+                                                                displayImage={displayImage}
+                                                                canEdit={canEdit}
+                                                                isPending={isPending}
+                                                                showFinalImage={category.showFinalImage}
+                                                                onEdit={() => openEditOption(option, category.id)}
+                                                                onDelete={() => handleDeleteOption(option.id)}
+                                                                onApprove={() => handleApproveNomination(option.id)}
+                                                                onReject={() => handleRejectNomination(option.id)}
+                                                            />
                                                         );
                                                     })}
                                                 </div>

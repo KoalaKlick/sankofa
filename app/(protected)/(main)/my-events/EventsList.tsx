@@ -12,14 +12,15 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { getEventLifecycleStatus, getEventPublicationStatus } from "@/lib/event-status";
 import { getEventImageUrl } from "@/lib/image-url-utils";
 
 const statusColors: Record<string, string> = {
     draft: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400",
     published: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400",
+    upcoming: "bg-sky-100 text-sky-800 dark:bg-sky-900/30 dark:text-sky-400",
     ongoing: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400",
     ended: "bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400",
-    cancelled: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400",
 };
 
 interface Event {
@@ -28,6 +29,7 @@ interface Event {
     slug: string;
     type: string;
     status: string;
+    isPublic: boolean;
     coverImage: string | null;
     startDate: Date | null;
     venueName: string | null;
@@ -44,6 +46,9 @@ export function EventsList({ events, organizationSlug }: EventsListProps) {
         <div className="grid gap-4">
             {events.map((event) => {
                 const coverImageUrl = getEventImageUrl(event.coverImage);
+                const lifecycleStatus = getEventLifecycleStatus(event);
+                const publicationStatus = getEventPublicationStatus(event.status);
+                const canViewPublicPage = Boolean(organizationSlug && event.isPublic && publicationStatus === "published");
 
                 return (
                     <div
@@ -80,8 +85,8 @@ export function EventsList({ events, organizationSlug }: EventsListProps) {
                                             {event.venueName ?? (event.isVirtual ? "Virtual Event" : "Location TBD")}
                                         </p>
                                     </div>
-                                    <Badge className={statusColors[event.status]}>
-                                        {event.status}
+                                    <Badge className={statusColors[lifecycleStatus]}>
+                                        {lifecycleStatus}
                                     </Badge>
                                 </div>
 
@@ -107,7 +112,7 @@ export function EventsList({ events, organizationSlug }: EventsListProps) {
                                     </Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end">
-                                    {organizationSlug && (
+                                    {canViewPublicPage && (
                                         <DropdownMenuItem asChild>
                                             <Link href={`/${organizationSlug}/event/${event.slug}`}>
                                                 <Eye className="mr-2 size-4" />

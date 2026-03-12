@@ -5,7 +5,7 @@
 
 "use client";
 
-import { useState, useTransition, useRef } from "react";
+import { useState, useTransition, useRef, type ChangeEvent, type ComponentProps } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -43,6 +43,7 @@ export function EventStep3MediaSettings({ initialData, onSuccess, onBack, onSkip
     );
     const [isPublic, setIsPublic] = useState(initialData?.isPublic ?? true);
     const [errors, setErrors] = useState<Record<string, string[]>>({});
+    const isPrivate = !isPublic;
 
     const coverInputRef = useRef<HTMLInputElement>(null);
     const bannerInputRef = useRef<HTMLInputElement>(null);
@@ -90,14 +91,14 @@ export function EventStep3MediaSettings({ initialData, onSuccess, onBack, onSkip
         }
     }
 
-    function handleFileChange(e: React.ChangeEvent<HTMLInputElement>, type: "cover" | "banner") {
+    function handleFileChange(e: ChangeEvent<HTMLInputElement>, type: "cover" | "banner") {
         const file = e.target.files?.[0];
         if (file) {
             handleImageUpload(file, type);
         }
     }
 
-    function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    function handleSubmit(e: Parameters<NonNullable<ComponentProps<"form">["onSubmit"]>>[0]) {
         e.preventDefault();
         setErrors({});
 
@@ -262,19 +263,19 @@ export function EventStep3MediaSettings({ initialData, onSuccess, onBack, onSkip
                         onClick={() => setIsPublic(false)}
                         className={cn(
                             "flex items-center justify-center gap-2 p-4 rounded-xl border-2 transition-all",
-                            !isPublic
+                            isPrivate
                                 ? "border-primary bg-primary/5"
                                 : "border-muted hover:border-muted-foreground/30"
                         )}
                     >
-                        <EyeOff className={cn("size-5", !isPublic ? "text-primary" : "text-muted-foreground")} />
+                        <EyeOff className={cn("size-5", isPrivate ? "text-primary" : "text-muted-foreground")} />
                         <span className="font-medium">Private</span>
                     </button>
                 </div>
                 <p className="text-xs text-muted-foreground">
                     {isPublic
                         ? "Anyone can find and view your event"
-                        : "Only people with the link can view your event"}
+                        : "Only organization members can view this event"}
                 </p>
             </div>
 

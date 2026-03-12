@@ -14,10 +14,8 @@ export default async function OrgProfilePage({ params }: OrgProfilePageProps) {
 
     // Parallelize organization profile and user auth check
     const supabase = await createClient();
-    const [organization, { data: { user } }] = await Promise.all([
-        getOrganizationProfile(slug),
-        supabase.auth.getUser(),
-    ]);
+    const { data: { user } } = await supabase.auth.getUser();
+    const organization = await getOrganizationProfile(slug, user?.id);
 
     if (!organization) {
         notFound();
@@ -44,7 +42,7 @@ export default async function OrgProfilePage({ params }: OrgProfilePageProps) {
                         Our Events.
                     </h2>
                     <PanAfricanDivider />
-                    <OrgEventList events={organization.events} />
+                    <OrgEventList events={organization.events} organizationSlug={slug} />
                 </section>
             </div>
         </main>

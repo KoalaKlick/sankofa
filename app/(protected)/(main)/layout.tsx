@@ -1,5 +1,4 @@
 import { redirect } from 'next/navigation'
-import { headers } from 'next/headers'
 import { createClient } from '@/utils/supabase/server'
 import { getProfileWithPromoterStatus } from '@/lib/dal/profile'
 import { getUserOrganizations, getOrganizationById, getPendingInvitationsForEmail } from '@/lib/dal/organization'
@@ -40,17 +39,9 @@ export default async function ProtectedLayout({
         return <>{children}</>
     }
 
-    // Get current path to avoid redirect loop
-    const headersList = await headers()
-    const pathname = headersList.get('x-pathname') || headersList.get('x-invoke-path') || ''
-    const isOnOrgCreation = pathname.includes('/organization/new')
-    const isOnInvitations = pathname.includes('/organization/invitations')
-
-    // Handle users with no organization
-    if (organizations.length === 0 && !isOnOrgCreation && !isOnInvitations) {
-        // Check for pending invitations
+    // Handle users with no organization - redirect to setup flow
+    if (organizations.length === 0) {
         const invitations = await getPendingInvitationsForEmail(user.email ?? "");
-
         if (invitations.length > 0) {
             redirect('/organization/invitations')
         } else {
@@ -71,11 +62,6 @@ export default async function ProtectedLayout({
     // If no valid active org from cookie, use first organization (but don't set cookie here)
     if (!activeOrganization && organizations.length > 0) {
         activeOrganization = await getOrganizationById(organizations[0].id)
-    }
-
-    // For org creation page during initial setup, show minimal layout
-    if (isOnOrgCreation && organizations.length === 0) {
-        return <>{children}</>
     }
 
     return (

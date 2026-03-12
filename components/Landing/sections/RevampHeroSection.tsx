@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { motion } from 'motion/react'
 import firstImage from '@/public/landing/h.webp'
 import secondImage from '@/public/landing/g.webp'
@@ -10,6 +10,7 @@ import AfricaImageClip from '@/components/shared/AfricaImageClip'
 import { defaultNavigationLinks } from '@/lib/const/landing'
 import { AfroTixLogo } from "@/components/shared/AfroTixLogo"
 import { cn } from '@/lib/utils'
+import PanafricanButton from '@/components/shared/PanafricanButton'
 
 export function HeroSection() {
     const pathname = usePathname()
@@ -20,16 +21,18 @@ export function HeroSection() {
         return pathname === href
     }
 
+    const router = useRouter()
+
     return (
         <section
             id="hero"
             className="font-poppins    text-black w-full overflow-hidden  h-svh min-h-fit md:max-h-[48rem] "
         >
-            <div className="max-w-7xl mx-auto  px-8 flex flex-col mt-20  h-full md:mt-0 md:flex-row">
+            <div className="max-w-7xl mx-auto  px-6 flex flex-col mt-14 xs:mt-16 sm:mt-16  flex-1 md:mt-0 md:flex-row">
                 <div className="flex-1  flex flex-col">
 
                     {/* ── Inline Navbar (desktop only) ── */}
-                    <div className="hidden md:flex items-center justify-between @min-[1300px]:px-0 h-20 flex-shrink-0">
+                    <div className="hidden md:flex items-center justify-evenly @min-[1300px]:px-0 h-20 flex-shrink-0">
 
                         <div className="flex items-center gap-6 lg:gap-8 ">
                             <Link href="/" className="pointer-events-auto bg-secondary-50">
@@ -69,8 +72,8 @@ export function HeroSection() {
                     </div>
 
                     {/* ── Hero text ── */}
-                    <div className="flex-1 py-10 flex flex-col justify-center py-14 md:py-0">
-                        <h1 className="text-5xl sm:text-6xl lg:text-7xl font-black uppercase leading-[0.93] tracking-tight mb-6">
+                    <div className="flex-1   flex flex-col justify-center">
+                        <h1 className="text-4xl md:text-6xl lg:text-7xl font-black uppercase leading-[0.93] tracking-tight mb-6">
                             Create,<br />
                             Manage &amp;<br />
                             Grow events.
@@ -80,22 +83,23 @@ export function HeroSection() {
                             sales, and powerful analytics. From community polls to
                             sold-out conferences, PanEvent makes it effortless.
                         </p>
-                        <div>
+                        <div className='space-x-4'>
                             <Link
                                 href="/auth/register"
-                                className="inline-flex items-center bg-[#009A44] hover:bg-[#007a36] text-white font-bold uppercase tracking-widest text-xs px-8 py-4 transition-colors duration-200"
+                                className="inline-flex items-center bg-[#009A44] hover:bg-[#007a36] text-white font-bold capitalize tracking-widest text-xs px-4 py-3 rounded-md transition-colors duration-200"
                             >
-                                Get Started
+                                Ongoing Events
                             </Link>
+                            <PanafricanButton onClick={() => router.push('/auth/register')} dashedBorderClassName="hover:opacity-90 transition-all rounded-none" dashArray='0 0' className='h-10 bg-white hover:bg-white/80   text-tertiary-700'>
+                                Get Started
+                            </PanafricanButton>
                         </div>
                     </div>
 
                 </div>
-                <div className="relative w-full max-w-2xl  md:my-auto aspect-square max-w- mx-auto lg:mx-0">
-
+                <div className="relative w-full    md:max-w-2xl  md:my-auto aspect-square max-w- mx-auto lg:mx-0">
                     {/* Top-center — largest clip */}
-                    <div className="absolute w-[70%] top-[2%] left-[12%] z-20
-                                            transition-transform duration-500 hover:scale-105 hover:z-30">
+                    <div className="absolute w-[70%] top-[2%] left-[12%] z-20 transition-transform duration-500 hover:scale-105 hover:z-30">
                         <AfricaImageClip
                             src={secondImage}
                             alt="Second image"

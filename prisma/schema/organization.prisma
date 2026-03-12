@@ -1,0 +1,97 @@
+// Prisma Schema - Organizations
+// Organization, membership, and invitation models
+
+model Organization {
+  id             String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name           String
+  slug           String   @unique
+  description    String?
+  logoUrl        String?  @map("logo_url")
+  bannerUrl      String?  @map("banner_url")
+  primaryColor   String   @default("#6366f1") @map("primary_color")
+  secondaryColor String   @default("#1e293b") @map("secondary_color")
+  faviconUrl     String?  @map("favicon_url")
+  websiteUrl     String?  @map("website_url")
+  contactEmail   String?  @map("contact_email")
+  createdBy      String?  @map("created_by") @db.Uuid
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt      DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+
+  // Relations
+  creator     Profile?                 @relation("CreatedOrganizations", fields: [createdBy], references: [id])
+  members     OrganizationMember[]
+  invitations OrganizationInvitation[]
+  requests    MembershipRequest[]
+  events      Event[]
+  wallets     Wallet[]
+
+  @@index([slug], name: "idx_organizations_slug")
+  @@index([createdBy], name: "idx_organizations_created_by")
+  @@map("organizations")
+}
+
+model OrganizationMember {
+  id             String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  organizationId String           @map("organization_id") @db.Uuid
+  userId         String           @map("user_id") @db.Uuid
+  role           OrganizationRole @default(member)
+  joinedAt       DateTime         @default(now()) @map("joined_at") @db.Timestamptz
+  updatedAt      DateTime         @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+
+  // Relations
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user         Profile      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, userId])
+  @@index([organizationId], name: "idx_org_members_organization")
+  @@index([userId], name: "idx_org_members_user")
+  @@index([role], name: "idx_org_members_role")
+  @@map("organization_members")
+}
+
+model OrganizationInvitation {
+  id             String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  organizationId String           @map("organization_id") @db.Uuid
+  inviterId      String?          @map("inviter_id") @db.Uuid
+  email          String
+  role           OrganizationRole @default(member)
+  status         InvitationStatus @default(pending)
+  token          String?          @unique
+  expiresAt      DateTime?        @default(dbgenerated("NOW() + INTERVAL '7 days'")) @map("expires_at") @db.Timestamptz
+  createdAt      DateTime         @default(now()) @map("created_at") @db.Timestamptz
+  respondedAt    DateTime?        @map("responded_at") @db.Timestamptz
+
+  // Relations
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  inviter      Profile?     @relation("InviterInvitations", fields: [inviterId], references: [id], onDelete: SetNull)
+
+  @@unique([organizationId, email, status])
+  @@index([organizationId], name: "idx_org_invitations_organization")
+  @@index([email], name: "idx_org_invitations_email")
+  @@index([token], name: "idx_org_invitations_token")
+  @@index([status], name: "idx_org_invitations_status")
+  @@map("organization_invitations")
+}
+
+model MembershipRequest {
+  id             String                  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  organizationId String                  @map("organization_id") @db.Uuid
+  userId         String                  @map("user_id") @db.Uuid
+  message        String?
+  status         MembershipRequestStatus @default(pending)
+  resolvedAt     DateTime?               @map("resolved_at") @db.Timestamptz
+  resolvedBy     String?                 @map("resolved_by") @db.Uuid
+  createdAt      DateTime                @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt      DateTime                @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+
+  // Relations
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user         Profile      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  resolver     Profile?     @relation("MembershipRequestResolver", fields: [resolvedBy], references: [id], onDelete: SetNull)
+
+  @@unique([organizationId, userId, status])
+  @@index([organizationId], name: "idx_membership_req_organization")
+  @@index([userId], name: "idx_membership_req_user")
+  @@index([status], name: "idx_membership_req_status")
+  @@map("membership_requests")
+}

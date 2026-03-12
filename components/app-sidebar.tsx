@@ -18,7 +18,6 @@ import Link from "next/link"
 
 import { NavMain } from "@/components/nav-main"
 import { NavUser } from "@/components/nav-user"
-import { NotificationDrawer } from "@/components/notification-drawer"
 import { AfroTixLogo } from "@/components/shared/AfroTixLogo"
 import {
   Sidebar,
@@ -95,15 +94,11 @@ export function AppSidebar({
         <NavMain items={navMain} />
       </SidebarContent>
       <SidebarFooter>
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <NotificationDrawer initialInvitations={pendingInvitations} />
-          </SidebarMenuItem>
-        </SidebarMenu>
         <NavUser
           user={sidebarUser}
           organizations={organizations}
           activeOrganizationId={activeOrganization?.id}
+          pendingInvitations={pendingInvitations}
         />
       </SidebarFooter>
     </Sidebar>

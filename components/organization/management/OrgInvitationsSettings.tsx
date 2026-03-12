@@ -190,12 +190,12 @@ export function OrgInvitationsSettings({ organizationId, invitations }: OrgInvit
                                                         month: "short",
                                                         day: "numeric",
                                                         year: "numeric",
-                                                      })}`
+                                                    })}`
                                                     : `Sent ${new Date(inv.createdAt).toLocaleDateString("en-US", {
                                                         month: "short",
                                                         day: "numeric",
                                                         year: "numeric",
-                                                      })}`
+                                                    })}`
                                                 }
                                             </p>
                                         </div>

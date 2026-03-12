@@ -28,10 +28,11 @@ export default async function ProtectedLayout({
     }
 
     // Parallelize independent data fetches
-    const [profile, organizations, activeOrgId] = await Promise.all([
+    const [profile, organizations, activeOrgId, pendingInvitations] = await Promise.all([
         getProfileWithPromoterStatus(user.id),
         getUserOrganizations(user.id),
         getActiveOrganizationId(),
+        getPendingInvitationsForEmail(user.email ?? ""),
     ]);
 
     // Check if onboarding is complete - if not, don't show sidebar
@@ -41,8 +42,7 @@ export default async function ProtectedLayout({
 
     // Handle users with no organization - redirect to setup flow
     if (organizations.length === 0) {
-        const invitations = await getPendingInvitationsForEmail(user.email ?? "");
-        if (invitations.length > 0) {
+        if (pendingInvitations.length > 0) {
             redirect('/organization/invitations')
         } else {
             redirect('/organization/new?setup=true')
@@ -74,6 +74,7 @@ export default async function ProtectedLayout({
                 }}
                 organizations={organizations}
                 activeOrganization={activeOrganization}
+                pendingInvitations={pendingInvitations}
             />
             <SidebarInset>
                 {children}

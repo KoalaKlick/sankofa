@@ -31,7 +31,7 @@ export default async function OrgProfilePage({ params }: OrgProfilePageProps) {
     }
 
     return (
-        <main className="min-h-screen bg-[#F8F7F1]">
+        <main className="min-h-screen pt-16 bg-[#F8F7F1]">
             <OrgProfileHero
                 organization={organization}
                 isUserAuthenticated={!!user}

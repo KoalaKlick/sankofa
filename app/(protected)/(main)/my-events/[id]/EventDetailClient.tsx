@@ -447,7 +447,7 @@ export function EventDetailClient({ event, organizationSlug, userRole, votingCat
                                 </div>
                             ) : (
                                 <button
-                                type="button"
+                                    type="button"
                                     className={cn(
                                         "text-2xl font-bold truncate",
                                         canEdit && "cursor-pointer hover:text-primary/80"

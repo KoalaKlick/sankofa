@@ -332,23 +332,170 @@ export const getOrganizationEventStats = cache(async (organizationId: string) =>
     try {
         logger.info({ organizationId }, "[DAL] Fetching event stats for organization");
 
-        const [total, published, draft] = await Promise.all([
-            prisma.event.count({ where: { organizationId } }),
-            prisma.event.count({ where: { organizationId, status: "published" } }),
-            prisma.event.count({ where: { organizationId, status: "draft" } }),
-        ]);
+        const now = new Date();
 
-        logger.info({ organizationId, total, published, draft }, "[DAL] Event stats");
-
-        return {
+        // Run all queries in parallel for performance
+        const [
             total,
             published,
             draft,
-            ongoing: 0, // TODO: Implement ongoing count
+            ongoing,
+            ended,
+            cancelled,
+            upcoming,
+            votingCount,
+            ticketedCount,
+            hybridCount,
+            advertisementCount,
+            ticketStats,
+            voteCount,
+            mostAttended,
+            nextUpcoming,
+            recentEnded,
+        ] = await Promise.all([
+            // Basic counts
+            prisma.event.count({ where: { organizationId } }),
+            prisma.event.count({ where: { organizationId, status: "published" } }),
+            prisma.event.count({ where: { organizationId, status: "draft" } }),
+            prisma.event.count({ where: { organizationId, status: "ongoing" } }),
+            prisma.event.count({ where: { organizationId, status: "ended" } }),
+            prisma.event.count({ where: { organizationId, status: "cancelled" } }),
+            // Upcoming: published events with future start date
+            prisma.event.count({
+                where: {
+                    organizationId,
+                    status: "published",
+                    startDate: { gt: now },
+                },
+            }),
+
+            // By type
+            prisma.event.count({ where: { organizationId, type: "voting" } }),
+            prisma.event.count({ where: { organizationId, type: "ticketed" } }),
+            prisma.event.count({ where: { organizationId, type: "hybrid" } }),
+            prisma.event.count({ where: { organizationId, type: "advertisement" } }),
+
+            // Ticket/Revenue aggregation
+            prisma.ticketOrder.aggregate({
+                where: {
+                    event: { organizationId },
+                    status: { in: ["paid", "confirmed"] },
+                },
+                _sum: { total: true },
+                _count: true,
+            }),
+
+            // Total votes across all events
+            prisma.vote.count({
+                where: { event: { organizationId } },
+            }),
+
+            // Most attended event (by ticket count)
+            prisma.event.findFirst({
+                where: { organizationId },
+                orderBy: { tickets: { _count: "desc" } },
+                select: {
+                    id: true,
+                    title: true,
+                    _count: { select: { tickets: true } },
+                },
+            }),
+
+            // Next upcoming event
+            prisma.event.findFirst({
+                where: {
+                    organizationId,
+                    status: "published",
+                    startDate: { gt: now },
+                },
+                orderBy: { startDate: "asc" },
+                select: { id: true, title: true, startDate: true },
+            }),
+
+            // Most recent ended event
+            prisma.event.findFirst({
+                where: { organizationId, status: "ended" },
+                orderBy: { endDate: "desc" },
+                select: { id: true, title: true, endDate: true },
+            }),
+        ]);
+
+        // Get total checked-in attendees
+        const totalAttendees = await prisma.ticket.count({
+            where: {
+                event: { organizationId },
+                checkInStatus: "checked_in",
+            },
+        });
+
+        const stats = {
+            // Basic counts
+            total,
+            published,
+            draft,
+            ongoing,
+            ended,
+            cancelled,
+            upcoming,
+
+            // By event type
+            byType: {
+                voting: votingCount,
+                ticketed: ticketedCount,
+                hybrid: hybridCount,
+                advertisement: advertisementCount,
+            },
+
+            // Engagement metrics
+            totalTicketsSold: ticketStats._count,
+            totalRevenue: Number(ticketStats._sum.total ?? 0),
+            totalAttendees,
+            totalVotes: voteCount,
+
+            // Highlights
+            mostAttendedEvent:
+                mostAttended && mostAttended._count.tickets > 0
+                    ? {
+                        id: mostAttended.id,
+                        title: mostAttended.title,
+                        attendees: mostAttended._count.tickets,
+                    }
+                    : undefined,
+            upcomingEvent: nextUpcoming
+                ? {
+                    id: nextUpcoming.id,
+                    title: nextUpcoming.title,
+                    startDate: nextUpcoming.startDate!,
+                }
+                : undefined,
+            recentEvent: recentEnded
+                ? {
+                    id: recentEnded.id,
+                    title: recentEnded.title,
+                    endDate: recentEnded.endDate!,
+                }
+                : undefined,
         };
+
+        logger.info({ organizationId, total, published, draft, ongoing }, "[DAL] Event stats");
+
+        return stats;
     } catch (error) {
         logger.error(error, "[DAL] Error fetching event stats:");
-        return { total: 0, published: 0, draft: 0, ongoing: 0 };
+        return {
+            total: 0,
+            published: 0,
+            draft: 0,
+            ongoing: 0,
+            ended: 0,
+            cancelled: 0,
+            upcoming: 0,
+            byType: { voting: 0, ticketed: 0, hybrid: 0, advertisement: 0 },
+            totalTicketsSold: 0,
+            totalRevenue: 0,
+            totalAttendees: 0,
+            totalVotes: 0,
+        };
     }
 });
 

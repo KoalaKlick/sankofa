@@ -9,3 +9,12 @@ export { EventStep1BasicInfo } from "./EventStep1BasicInfo";
 export { EventStep2DateLocation } from "./EventStep2DateLocation";
 export { EventStep3MediaSettings } from "./EventStep3MediaSettings";
 export { VotingManager } from "./VotingManager";
+export {
+    EventStats,
+    StatCard,
+    StatsGrid,
+    StatsSection,
+    StatIcons,
+    type EventStatsData,
+    type StatCardProps,
+} from "./EventStats";

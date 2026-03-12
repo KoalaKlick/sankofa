@@ -266,7 +266,7 @@ export function OrgGeneralSettings({ organization }: OrgGeneralSettingsProps) {
                             </button>
                         </>
                     ) : (
-                        <button 
+                        <button
                             type="button"
                             className="w-full h-full flex flex-col items-center justify-center border-2 border-dashed border-muted-foreground/25 rounded-lg cursor-pointer hover:bg-muted/80 transition-colors"
                             onClick={() => bannerInputRef.current?.click()}
@@ -319,7 +319,7 @@ export function OrgGeneralSettings({ organization }: OrgGeneralSettingsProps) {
                                 </button>
                             </>
                         ) : (
-                            <button 
+                            <button
                                 type="button"
                                 className="w-full h-full bg-primary/10 flex items-center justify-center text-primary rounded-lg cursor-pointer hover:bg-primary/20 transition-colors"
                                 onClick={() => logoInputRef.current?.click()}

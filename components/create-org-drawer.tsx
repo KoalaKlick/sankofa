@@ -79,7 +79,7 @@ export function CreateOrgDrawer({ open, onOpenChange }: CreateOrgDrawerProps) {
     const [logoPath, setLogoPath] = useState("");
     const [description, setDescription] = useState("");
     const [isUploading, setIsUploading] = useState(false);
-    
+
     // Derive display URL from path
     const logoDisplayUrl = logoPath ? getOrgImageUrl(logoPath) : null;
 
@@ -148,7 +148,7 @@ export function CreateOrgDrawer({ open, onOpenChange }: CreateOrgDrawerProps) {
         setSlug(value.toLowerCase().replaceAll(/[^a-z0-9-]/g, ""));
         setIsSlugManuallyEdited(true);
     }
-  
+
     async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
         const file = e.target.files?.[0];
         if (!file) return;

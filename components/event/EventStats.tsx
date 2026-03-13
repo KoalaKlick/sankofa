@@ -1,6 +1,7 @@
 "use client";
 
 import { ReactNode } from "react";
+import NextImage from "next/image";
 import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -19,12 +20,36 @@ import {
 import { cn } from "@/lib/utils";
 
 /**
+ * 3D stat icon paths mapped by name
+ */
+export const statIcons = {
+    analytics: "/stat-icon/analytics-yellow.webp",
+    cancel: "/stat-icon/cancel-red.webp",
+    cediBlack: "/stat-icon/cedi-black.webp",
+    cedi: "/stat-icon/cedi-green.webp",
+    end: "/stat-icon/end-red.webp",
+    euro: "/stat-icon/euro-green.webp",
+    high: "/stat-icon/high-green.webp",
+    locationBlack: "/stat-icon/location-black.webp",
+    location: "/stat-icon/location-red.webp",
+    ongoingGreen: "/stat-icon/ongoing-green.webp",
+    ongoing: "/stat-icon/ongoing-yellow.webp",
+    plus: "/stat-icon/plus-green.webp",
+    search: "/stat-icon/search-red.webp",
+    ticketRed: "/stat-icon/ticket-red.webp",
+    ticket: "/stat-icon/ticket-yellow.webp",
+    user: "/stat-icon/user-black.webp",
+    vote: "/stat-icon/vote-red.webp",
+} as const;
+
+/**
  * Individual Stat Card Props
  */
 export interface StatCardProps {
     label: string;
     value: number | string;
     icon?: LucideIcon;
+    iconSrc?: string;
     description?: string;
     href?: string;
     variant?: "default" | "success" | "warning" | "danger" | "info";
@@ -38,6 +63,7 @@ export function StatCard({
     label,
     value,
     icon: Icon,
+    iconSrc,
     description,
     href,
     variant = "default",
@@ -68,7 +94,11 @@ export function StatCard({
                         <p className="text-2xl font-bold">{value}</p>
                         {description && <p className="text-xs text-muted-foreground">{description}</p>}
                     </div>
-                    {Icon && <Icon className={cn("size-8 opacity-80", iconStyles[variant])} />}
+                    {iconSrc ? (
+                        <NextImage src={iconSrc} alt={label} width={48} height={48} className="size-12 object-contain" />
+                    ) : Icon ? (
+                        <Icon className={cn("size-8 opacity-80", iconStyles[variant])} />
+                    ) : null}
                 </div>
             </CardContent>
         </Card>

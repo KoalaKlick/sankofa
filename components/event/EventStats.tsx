@@ -17,7 +17,7 @@ import {
     Ban,
     type LucideIcon,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, formatAmount } from "@/lib/utils";
 
 /**
  * 3D stat icon paths mapped by name
@@ -40,6 +40,7 @@ export const statIcons = {
     ticket: "/stat-icon/ticket-yellow.webp",
     user: "/stat-icon/user-black.webp",
     vote: "/stat-icon/vote-red.webp",
+    draft: "/stat-icon/draft-black.webp",
 } as const;
 
 /**
@@ -57,25 +58,55 @@ export interface StatCardProps {
 }
 
 /**
- * Derive card color from the icon filename's color suffix
+ * Derive card gradient from the icon filename's color suffix.
+ * Bottom-right glow matches the icon color.
  */
-function getIconColorStyles(iconSrc: string): string {
+function getIconColorStyles(iconSrc: string): { style: React.CSSProperties; className: string } {
     const filename = iconSrc.split("/").pop() ?? "";
     const base = filename.replace(".webp", "");
     const color = base.split("-").pop();
 
-    switch (color) {
-        case "red":
-            return "bg-red-100 dark:bg-red-950/20 border-red-200 dark:border-red-900";
-        case "yellow":
-            return "bg-amber-100 dark:bg-amber-950/20 border-amber-200 dark:border-amber-900";
-        case "green":
-            return "bg-emerald-100 dark:bg-emerald-950/20 border-emerald-200 dark:border-emerald-900";
-        case "black":
-            return "bg-gray-100 dark:bg-gray-950/20 border-gray-200 dark:border-gray-800";
-        default:
-            return "bg-card";
-    }
+    const colorGlow: Record<string, string> = {
+        red: "radial-gradient(circle at bottom right,rgba(220,38,38,0.28),transparent 50%)",
+        yellow: "radial-gradient(circle at bottom right,rgba(234,179,8,0.28),transparent 50%)",
+        green: "radial-gradient(circle at bottom right,rgba(22,163,74,0.28),transparent 50%)",
+        black: "radial-gradient(circle at bottom right,rgba(160,160,160,0.18),transparent 50%)",
+    };
+
+    const borderColor: Record<string, string> = {
+        red: "border-red-900/10",
+        yellow: "border-amber-900/10",
+        green: "border-emerald-900/10",
+        black: "border-gray-800/10",
+    };
+
+    const backgroundImage = color && colorGlow[color] ? colorGlow[color] : undefined;
+    const border = color && borderColor[color] ? borderColor[color] : "border-white/10";
+
+    return { style: backgroundImage ? { backgroundImage } : {}, className: border };
+}
+
+/**
+ * Format a number with compact notation for large values (1.2K, 1.5M, etc.)
+ */
+function formatCompact(value: number | string): string {
+    if (typeof value === "string") return value;
+    if (value >= 1_000_000) return `${(value / 1_000_000).toFixed(1).replace(/\.0$/, "")}M`;
+    if (value >= 10_000) return `${(value / 1_000).toFixed(1).replace(/\.0$/, "")}K`;
+    if (value >= 1_000) return value.toLocaleString();
+    return value.toString();
+}
+
+/**
+ * Get text size class based on display string length
+ */
+function getValueSizeClass(display: string): string {
+    const len = display.length;
+    if (len <= 2) return "text-6xl leading-12";
+    if (len <= 4) return "text-5xl leading-11";
+    if (len <= 6) return "text-4xl leading-10";
+    if (len <= 9) return "text-3xl leading-9";
+    return "text-2xl leading-8";
 }
 
 /**
@@ -108,27 +139,34 @@ export function StatCard({
     };
 
     // Icon color suffix takes priority, then variant
-    const cardStyle = iconSrc ? getIconColorStyles(iconSrc) : variantStyles[variant];
+    const iconColor = iconSrc ? getIconColorStyles(iconSrc) : null;
+    const cardStyle = iconColor ? iconColor.className : variantStyles[variant];
+    const cardInlineStyle = iconColor ? iconColor.style : undefined;
 
-    const content = (
-        <Card className={cn("border relative px-4 font-montserrat overflow-clip transition-shadow hover:shadow-md", cardStyle, className)}>
-            <CardContent className="p-0">
-                <div className="flex items-center justify-between">
-                    <div className="space-y-1">
-                        <p className="text-sm font-medium text-muted-foreground">{label}</p>
-                        <p className="text-6xl leading-12 font-bold text-white">{value}</p>
-                        {description && <p className="text-xs text-muted-foreground">{description}</p>}
+    const content = (() => {
+        const display = typeof value === "number" ? formatCompact(value) : value;
+        const sizeClass = getValueSizeClass(String(display));
+
+        return (
+            <Card className={cn("border relative px-4  overflow-clip transition-shadow hover:shadow-md", cardStyle, className)} style={cardInlineStyle}>
+                <CardContent className="p-0">
+                    <div className="flex items-center justify-between">
+                        <div className="space-y-1">
+                            <p className="text-sm font-medium text-muted-foreground">{label}</p>
+                            <p className={cn(sizeClass, "font-bold font-montserrat text-black")}>{display}</p>
+                            {description && <p className="text-xs text-muted-foreground">{description}</p>}
+                        </div>
+                        {iconSrc && (
+                            <NextImage src={iconSrc} alt={label} width={100} height={100} className="h-full select-none w-auto object-cover opacity-20 absolute -bottom-10 -right-10" />
+                        )}
+                        {!iconSrc && Icon && (
+                            <Icon className={cn("size-8 opacity-80", iconStyles[variant])} />
+                        )}
                     </div>
-                    {iconSrc && (
-                        <NextImage src={iconSrc} alt={label} width={100} height={100} className="h-full w-auto object-cover opacity-20 absolute -bottom-10 -right-10" />
-                    )}
-                    {!iconSrc && Icon && (
-                        <Icon className={cn("size-8 opacity-80", iconStyles[variant])} />
-                    )}
-                </div>
-            </CardContent>
-        </Card>
-    );
+                </CardContent>
+            </Card>
+        );
+    })();
 
     if (href) {
         return (
@@ -223,16 +261,6 @@ interface EventStatsProps {
 }
 
 export function EventStats({ stats, showEngagement = true, showByType = false, className }: EventStatsProps) {
-    // Format currency
-    const formatCurrency = (amount: number) => {
-        return new Intl.NumberFormat("en-NG", {
-            style: "currency",
-            currency: "NGN",
-            minimumFractionDigits: 0,
-            maximumFractionDigits: 0,
-        }).format(amount);
-    };
-
     return (
         <div className={cn("space-y-6", className)}>
             {/* Primary Stats */}
@@ -244,7 +272,7 @@ export function EventStats({ stats, showEngagement = true, showByType = false, c
                     iconSrc={statIcons.high}
                 />
                 <StatCard label="Ongoing" value={stats.ongoing} iconSrc={statIcons.ongoing} />
-                <StatCard label="Drafts" value={stats.draft} iconSrc={statIcons.end} />
+                <StatCard label="Drafts" value={stats.draft} iconSrc={statIcons.draft} />
             </StatsGrid>
 
             {/* Engagement Stats */}
@@ -260,7 +288,7 @@ export function EventStats({ stats, showEngagement = true, showByType = false, c
                         <StatCard label="Total Votes" value={stats.totalVotes} iconSrc={statIcons.vote} />
                         <StatCard
                             label="Revenue"
-                            value={formatCurrency(stats.totalRevenue)}
+                            value={formatAmount(stats.totalRevenue)}
                             iconSrc={statIcons.analytics}
                         />
                     </StatsGrid>

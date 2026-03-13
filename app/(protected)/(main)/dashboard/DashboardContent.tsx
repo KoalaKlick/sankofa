@@ -1,11 +1,11 @@
 "use client";
 
 import { Calendar, User, Wallet } from "lucide-react";
-import { statIcons } from "@/components/event/EventStats";
+import { StatCard, StatsGrid, statIcons } from "@/components/event/EventStats";
+import { formatAmount } from "@/lib/utils";
 import type { Profile, Organization } from "@/lib/generated/prisma";
 import { PageHeader } from "@/components/shared/page-header";
 import {
-    StatsCard,
     RecentActivity,
     UpcomingEvents,
     WelcomeCard,
@@ -61,7 +61,7 @@ export function DashboardContent({
         },
     ];
 
-    const isNewUser = stats.totalEvents === 0; // This logic might need adjustment based on actual setup completion
+    const isNewUser = stats.totalEvents === 0;
 
     return (
         <>
@@ -69,36 +69,28 @@ export function DashboardContent({
 
             <div className="flex flex-1 flex-col gap-6 p-4 pt-0">
                 {/* Stats Grid */}
-                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                    <StatsCard
-                        title="Total Events"
-                        value={stats.totalEvents.toString()}
-                        description="Total events you've created across all organizations."
+                <StatsGrid columns={4}>
+                    <StatCard
+                        label="Total Events"
+                        value={stats.totalEvents}
                         iconSrc={statIcons.search}
-                        trend={stats.totalEvents > 0 ? { value: 0, isPositive: true } : undefined}
                     />
-                    <StatsCard
-                        title="Tickets Sold"
-                        value={stats.ticketsSold.toLocaleString()}
-                        description="Total tickets across all events"
+                    <StatCard
+                        label="Tickets Sold"
+                        value={stats.ticketsSold}
                         iconSrc={statIcons.ticket}
-                        trend={stats.ticketsSold > 0 ? { value: 0, isPositive: true } : undefined}
                     />
-                    <StatsCard
-                        title="Revenue"
-                        value={`£${stats.revenue.toLocaleString()}`}
-                        description="Total earnings"
+                    <StatCard
+                        label="Revenue"
+                        value={formatAmount(stats.revenue)}
                         iconSrc={statIcons.cedi}
-                        trend={stats.revenue > 0 ? { value: 0, isPositive: true } : undefined}
                     />
-                    <StatsCard
-                        title="Attendees"
-                        value={stats.attendees.toLocaleString()}
-                        description="People at your events"
+                    <StatCard
+                        label="Attendees"
+                        value={stats.attendees}
                         iconSrc={statIcons.user}
-                        trend={stats.attendees > 0 ? { value: 0, isPositive: true } : undefined}
                     />
-                </div>
+                </StatsGrid>
 
                 {/* Activity and Events Grid */}
                 <div className="grid gap-6 lg:grid-cols-2">

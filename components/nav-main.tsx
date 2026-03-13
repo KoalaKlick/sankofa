@@ -19,6 +19,39 @@ import {
   SidebarMenuSubItem,
 } from "@/components/ui/sidebar"
 import Link from "next/link"
+import { cn } from "@/lib/utils"
+
+// Pan-African color cycle: red → gold → green
+const afroColors = [
+  {
+    hover: "hover:bg-red-600/10",
+    active: "data-[active=true]:bg-red-600/18 data-[active=true]:shadow-sm",
+    open: "data-[state=open]:bg-red-600/10",
+    subHover: "hover:bg-red-600/10",
+    subActive: "data-[active=true]:bg-red-600/18 data-[active=true]:shadow-sm",
+    bar: "#dc2626",
+  },
+  {
+    hover: "hover:bg-yellow-500/12",
+    active: "data-[active=true]:bg-yellow-500/20 data-[active=true]:shadow-sm",
+    open: "data-[state=open]:bg-yellow-500/12",
+    subHover: "hover:bg-yellow-500/12",
+    subActive: "data-[active=true]:bg-yellow-500/20 data-[active=true]:shadow-sm",
+    bar: "#eab308",
+  },
+  {
+    hover: "hover:bg-green-600/10",
+    active: "data-[active=true]:bg-green-600/18 data-[active=true]:shadow-sm",
+    open: "data-[state=open]:bg-green-600/10",
+    subHover: "hover:bg-green-600/10",
+    subActive: "data-[active=true]:bg-green-600/18 data-[active=true]:shadow-sm",
+    bar: "#16a34a",
+  },
+] as const
+
+function getAfroColor(index: number) {
+  return afroColors[index % afroColors.length]
+}
 
 export function NavMain({
   items,
@@ -36,7 +69,6 @@ export function NavMain({
 }) {
   const pathname = usePathname()
 
-  // Helper to check if a URL is active
   const isUrlActive = (url: string) => {
     if (url === "/dashboard") {
       return pathname === "/dashboard"
@@ -44,22 +76,36 @@ export function NavMain({
     return pathname === url || pathname.startsWith(`${url}/`)
   }
 
-  // Check if any sub-item is active
   const hasActiveSubItem = (subItems?: readonly { readonly url: string }[]) => {
     return subItems?.some(subItem => isUrlActive(subItem.url)) ?? false
   }
 
+  const findActiveSubItemIndex = (subItems?: readonly { readonly url: string }[]) => {
+    if (!subItems) return 0
+    const idx = subItems.findIndex(subItem => isUrlActive(subItem.url))
+    return idx === -1 ? 0 : idx
+  }
+
   return (
     <SidebarGroup>
-      <SidebarGroupLabel>Platform</SidebarGroupLabel>
       <SidebarMenu>
-        {items.map((item) => {
+        {items.map((item, index) => {
           const isActive = isUrlActive(item.url) || hasActiveSubItem(item.items)
+          const color = getAfroColor(index)
 
           if (!item.items || item.items.length === 0) {
             return (
               <SidebarMenuItem key={item.title}>
-                <SidebarMenuButton asChild tooltip={item.title} isActive={isActive}>
+                <SidebarMenuButton
+                  asChild
+                  tooltip={item.title}
+                  isActive={isActive}
+                  className={cn(
+                    "rounded-md text-sm text-gray-900 transition-all duration-200 hover:text-black data-[active=true]:font-semibold data-[active=true]:text-black",
+                    color.hover,
+                    color.active,
+                  )}
+                >
                   <Link href={item.url}>
                     {item.icon && <item.icon />}
                     <span>{item.title}</span>
@@ -68,6 +114,9 @@ export function NavMain({
               </SidebarMenuItem>
             )
           }
+
+          const hasActiveSub = hasActiveSubItem(item.items)
+          const activeSubIndex = findActiveSubItemIndex(item.items)
 
           return (
             <Collapsible
@@ -78,24 +127,52 @@ export function NavMain({
             >
               <SidebarMenuItem>
                 <CollapsibleTrigger asChild>
-                  <SidebarMenuButton tooltip={item.title} isActive={isActive}>
+                  <SidebarMenuButton
+                    tooltip={item.title}
+                    isActive={isActive}
+                    className={cn(
+                      "rounded-md text-sm text-gray-900 transition-all duration-200 hover:text-black data-[active=true]:font-semibold data-[active=true]:text-black data-[state=open]:hover:text-black",
+                      color.hover,
+                      color.active,
+                      color.open,
+                      `data-[state=open]:${color.hover}`,
+                    )}
+                  >
                     {item.icon && <item.icon />}
                     <span>{item.title}</span>
                     <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
                   </SidebarMenuButton>
                 </CollapsibleTrigger>
                 <CollapsibleContent>
-                  <SidebarMenuSub>
-                    {item.items?.map((subItem) => (
-                      <SidebarMenuSubItem key={subItem.title}>
-                        <SidebarMenuSubButton asChild isActive={isUrlActive(subItem.url)}>
-                          <Link href={subItem.url}>
-                            <span>{subItem.title}</span>
-                          </Link>
-                        </SidebarMenuSubButton>
-                      </SidebarMenuSubItem>
-                    ))}
-                  </SidebarMenuSub>
+                  <div className="relative">
+                    <div
+                      className="absolute left-3.5 z-10 h-3.5 w-1 rounded-sm transition-all duration-300 ease-in-out"
+                      style={{
+                        top: `${activeSubIndex * 32 + 13}px`,
+                        opacity: hasActiveSub ? 1 : 0,
+                        backgroundColor: color.bar,
+                      }}
+                    />
+                    <SidebarMenuSub className="mt-1 border-l-black/10">
+                      {item.items?.map((subItem) => (
+                        <SidebarMenuSubItem key={subItem.title}>
+                          <SidebarMenuSubButton
+                            asChild
+                            isActive={isUrlActive(subItem.url)}
+                            className={cn(
+                              "rounded-md text-sm font-medium text-gray-900 transition-all duration-200 hover:text-black data-[active=true]:font-semibold data-[active=true]:text-black",
+                              color.subHover,
+                              color.subActive,
+                            )}
+                          >
+                            <Link href={subItem.url}>
+                              <span>{subItem.title}</span>
+                            </Link>
+                          </SidebarMenuSubButton>
+                        </SidebarMenuSubItem>
+                      ))}
+                    </SidebarMenuSub>
+                  </div>
                 </CollapsibleContent>
               </SidebarMenuItem>
             </Collapsible>

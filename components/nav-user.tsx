@@ -21,10 +21,11 @@ import {
 } from "lucide-react"
 
 import {
-  Avatar,
+  Avatar as UiAvatar,
   AvatarFallback,
   AvatarImage,
 } from "@/components/ui/avatar"
+import { Avatar as UserAvatar } from "@/components/shared/image/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
@@ -197,35 +198,39 @@ export function NavUser({
           <DropdownMenuTrigger asChild>
             <SidebarMenuButton
               size="lg"
-              className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+              className="rounded-md border border-white/8 hover:text-black  hover:bg-black/5 bg-white/5 transition-all duration-200  hover:border-white/12 data-[state=open]:bg-white/10 data-[state=open]:border-white/15"
             >
-              <Avatar className="h-8 w-8 rounded-lg">
-                <AvatarImage src={user.avatar} alt={user.name} />
-                <AvatarFallback className="rounded-lg">
-                  {getInitials(user.name)}
-                </AvatarFallback>
-              </Avatar>
+              <UserAvatar
+                src={user.avatar}
+                alt={user.name}
+                fullName={user.name}
+                width={32}
+                height={32}
+                className="h-8 w-8 rounded-lg ring-1 ring-white/15"
+              />
               <div className="grid flex-1 text-left text-sm leading-tight">
                 <span className="truncate font-medium">{user.name}</span>
                 <span className="truncate text-xs">{user.email}</span>
               </div>
-              <ChevronsUpDown className="ml-auto size-4" />
+              <ChevronsUpDown className="ml-auto size-4 opacity-40" />
             </SidebarMenuButton>
           </DropdownMenuTrigger>
           <DropdownMenuContent
-            className="w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg"
+            className="w-(--radix-dropdown-menu-trigger-width) min-w-56 md:min-w-60 rounded-lg border-white/10  shadow-md shadow-black/20 "
             side={isMobile ? "bottom" : "right"}
             align="end"
             sideOffset={4}
           >
             <DropdownMenuLabel className="p-0 font-normal">
               <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
-                <Avatar className="h-8 w-8 rounded-lg">
-                  <AvatarImage src={user.avatar} alt={user.name} />
-                  <AvatarFallback className="rounded-lg">
-                    {getInitials(user.name)}
-                  </AvatarFallback>
-                </Avatar>
+                <UserAvatar
+                  src={user.avatar}
+                  alt={user.name}
+                  fullName={user.name}
+                  width={32}
+                  height={32}
+                  className="h-8 w-8 rounded-lg ring-1 ring-white/15"
+                />
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-medium">{user.name}</span>
                   <span className="truncate text-xs">{user.email}</span>
@@ -259,12 +264,12 @@ export function NavUser({
                           className="gap-2 cursor-pointer"
                           disabled={isPending}
                         >
-                          <Avatar className="size-5 rounded-md">
+                          <UiAvatar className="size-5 rounded-md">
                             <AvatarImage src={getOrgImageUrl(org.logoUrl) ?? undefined} alt={org.name} />
                             <AvatarFallback className="rounded-md text-[8px] font-semibold">
                               {getInitials(org.name)}
                             </AvatarFallback>
-                          </Avatar>
+                          </UiAvatar>
                           <div className="flex flex-col flex-1 min-w-0">
                             <span className="font-medium truncate">{org.name}</span>
                             <span className="text-xs text-muted-foreground">
@@ -363,58 +368,59 @@ export function NavUser({
                   const invitationLogoUrl = getOrgImageUrl(invitation.organization.logoUrl)
 
                   return (
-                  <Card key={invitation.id} className="overflow-hidden">
-                    <CardHeader className="flex flex-row items-center gap-4 space-y-0 pb-2">
-                      <div className="relative flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 text-primary overflow-hidden">
-                        {invitationLogoUrl ? (
-                          <Image
-                            src={invitationLogoUrl}
-                            alt={invitation.organization.name}
-                            fill
-                            sizes="48px"
-                            className="object-cover rounded-lg"
-                            unoptimized
-                          />
-                        ) : (
-                          <Building2 className="h-6 w-6" />
-                        )}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <CardTitle className="text-base truncate">
-                          {invitation.organization.name}
-                        </CardTitle>
-                        <p className="text-sm text-muted-foreground">
-                          Role: <span className="capitalize">{invitation.role}</span>
-                        </p>
-                      </div>
-                    </CardHeader>
-                    <CardFooter className="bg-muted/30 pt-4 flex gap-2">
-                      <Button
-                        size="sm"
-                        className="flex-1"
-                        onClick={() => handleAcceptInvite(invitation.id)}
-                        disabled={isPending && processingInviteId === invitation.id}
-                      >
-                        {isPending && processingInviteId === invitation.id ? (
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        ) : (
-                          <Check className="mr-2 h-4 w-4" />
-                        )}
-                        Accept
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="flex-1"
-                        onClick={() => handleDeclineInvite(invitation.id)}
-                        disabled={isPending && processingInviteId === invitation.id}
-                      >
-                        <X className="mr-2 h-4 w-4" />
-                        Decline
-                      </Button>
-                    </CardFooter>
-                  </Card>
-                )})}
+                    <Card key={invitation.id} className="overflow-hidden">
+                      <CardHeader className="flex flex-row items-center gap-4 space-y-0 pb-2">
+                        <div className="relative flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 text-primary overflow-hidden">
+                          {invitationLogoUrl ? (
+                            <Image
+                              src={invitationLogoUrl}
+                              alt={invitation.organization.name}
+                              fill
+                              sizes="48px"
+                              className="object-cover rounded-lg"
+                              unoptimized
+                            />
+                          ) : (
+                            <Building2 className="h-6 w-6" />
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <CardTitle className="text-base truncate">
+                            {invitation.organization.name}
+                          </CardTitle>
+                          <p className="text-sm text-muted-foreground">
+                            Role: <span className="capitalize">{invitation.role}</span>
+                          </p>
+                        </div>
+                      </CardHeader>
+                      <CardFooter className="bg-muted/30 pt-4 flex gap-2">
+                        <Button
+                          size="sm"
+                          className="flex-1"
+                          onClick={() => handleAcceptInvite(invitation.id)}
+                          disabled={isPending && processingInviteId === invitation.id}
+                        >
+                          {isPending && processingInviteId === invitation.id ? (
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          ) : (
+                            <Check className="mr-2 h-4 w-4" />
+                          )}
+                          Accept
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="flex-1"
+                          onClick={() => handleDeclineInvite(invitation.id)}
+                          disabled={isPending && processingInviteId === invitation.id}
+                        >
+                          <X className="mr-2 h-4 w-4" />
+                          Decline
+                        </Button>
+                      </CardFooter>
+                    </Card>
+                  )
+                })}
               </div>
             ) : (
               <div className="flex flex-col items-center justify-center py-12 text-center">

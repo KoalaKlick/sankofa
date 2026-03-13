@@ -5,25 +5,17 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
-// Color palette for avatar backgrounds based on name/initials
+// Pan-African color palette for avatar backgrounds based on name/initials
 const colorClasses = [
-  'bg-red-500 text-white',
-  'bg-orange-500 text-white',
-  'bg-amber-500 text-white',
+  'bg-red-700 text-white',
+  'bg-red-600 text-white',
+  'bg-red-800 text-white',
   'bg-yellow-500 text-black',
-  'bg-lime-500 text-black',
-  'bg-green-500 text-white',
-  'bg-emerald-500 text-white',
-  'bg-teal-500 text-white',
-  'bg-cyan-500 text-white',
-  'bg-sky-500 text-white',
-  'bg-blue-500 text-white',
-  'bg-indigo-500 text-white',
-  'bg-violet-500 text-white',
-  'bg-purple-500 text-white',
-  'bg-fuchsia-500 text-white',
-  'bg-pink-500 text-white',
-  'bg-rose-500 text-white',
+  'bg-amber-500 text-black',
+  'bg-yellow-600 text-white',
+  'bg-green-700 text-white',
+  'bg-green-600 text-white',
+  'bg-emerald-700 text-white',
 ]
 
 /**

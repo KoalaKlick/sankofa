@@ -1,14 +1,8 @@
 import {
     Building2,
     Calendar,
-    Heart,
     Home,
-    QrCode,
-    Search,
-    Ticket,
     TrendingUp,
-    Users,
-    Wallet,
 } from "lucide-react"
 import type { LucideIcon } from "lucide-react"
 import type { OrganizationRole } from "@/lib/generated/prisma"
@@ -45,22 +39,19 @@ export const navMain: NavItem[] = [
         icon: Calendar,
         items: [
             {
-                title: "Explore",
-                url: "/events",
-            },
-            {
                 title: "My Events",
                 url: "/my-events",
-            },
-            {
-                title: "My Tickets",
-                url: "/tickets",
             },
             {
                 title: "Create Event",
                 url: "/my-events/new",
             },
         ],
+    },
+    {
+        title: "Promoter Hub",
+        url: "/promoter",
+        icon: TrendingUp,
     },
     {
         title: "Organization",

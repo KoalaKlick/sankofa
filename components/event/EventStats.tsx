@@ -148,8 +148,8 @@ export function StatCard({
         const sizeClass = getValueSizeClass(String(display));
 
         return (
-            <Card className={cn("border relative px-4  overflow-clip transition-shadow hover:shadow-md", cardStyle, className)} style={cardInlineStyle}>
-                <CardContent className="p-0">
+            <Card className={cn("relative px-4 overflow-hidden border transition-shadow hover:shadow-md", cardStyle, className)} style={{ backgroundColor: 'transparent', ...cardInlineStyle }}>
+                <CardContent className="p-0 !bg-transparent">
                     <div className="flex items-center justify-between">
                         <div className="space-y-1">
                             <p className="text-sm font-medium text-muted-foreground">{label}</p>
